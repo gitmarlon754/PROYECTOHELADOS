@@ -1,0 +1,9 @@
+<h2>Productos</h2>
+<p>DEBUG PRODUCTOS: {{ productos | json }}</p>
+<p>Total productos: {{ productos.length }}</p>
+
+<ul>
+    <li *ngFor="let p of productos">
+        {{ p.nombre }} - ${{ p.precio }}
+    </li>
+</ul>   
