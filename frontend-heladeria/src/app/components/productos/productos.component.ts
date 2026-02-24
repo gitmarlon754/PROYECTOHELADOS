@@ -11,6 +11,8 @@ import { ProductoService } from '../../services/producto.service';
     export class ProductosComponent implements OnInit {
 
     productos: any[] = [];
+        inventario: any[] = [];
+        ventasRecientes: any[] = [];
 
     constructor(
         private productoService: ProductoService,
@@ -20,6 +22,12 @@ import { ProductoService } from '../../services/producto.service';
     ngOnInit(): void {
         this.productoService.getProductos().subscribe(data => {
             this.productos = data;
+        });
+        this.productoService.getInventario().subscribe(data => {
+            this.inventario = data;
+        });
+        this.productoService.getVentasRecent().subscribe(data => {
+            this.ventasRecientes = data;
         });
     }
 }

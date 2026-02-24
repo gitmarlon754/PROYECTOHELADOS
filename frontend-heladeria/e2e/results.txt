@@ -1,0 +1,26 @@
+Observed response: http://localhost:8080/api/mock/productos 200
+Observed response: http://localhost:8080/api/mock/inventario 200
+Observed response: http://localhost:8080/api/mock/ventas/recent 200
+productos response sample: [
+  {
+    precio: 2.5,
+    categoria: 'Clásicos',
+    id: 1,
+    nombre: 'Helado Vainilla'
+  },
+  {
+    precio: 3,
+    categoria: 'Clásicos',
+    id: 2,
+    nombre: 'Helado Chocolate'
+  }
+]
+inventario response sample: [ { productoId: 1, sede: 'Central', stock: 25 } ]
+ventas response sample: [ { fecha: '2026-02-23T12:34:00', total: 15, id: 1001 } ]
+/ws-ventas/info: {
+  entropy: 1746691811,
+  origins: [ '*:*' ],
+  cookie_needed: true,
+  websocket: true
+}
+E2E result: { productos: true, inventario: true, ventas: true, sockjs: true }
