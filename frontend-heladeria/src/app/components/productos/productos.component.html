@@ -1,9 +1,155 @@
-<h2>Productos</h2>
-<p>DEBUG PRODUCTOS: {{ productos | json }}</p>
-<p>Total productos: {{ productos.length }}</p>
+<section class="catalogo">
+    <header class="catalogo__header">
+        <div>
+            <h2>Catálogo de productos</h2>
+            <p class="catalogo__subtitle">Vista rápida para demostración del cliente</p>
+        </div>
 
-<ul>
-    <li *ngFor="let p of productos">
-        {{ p.nombre }} - ${{ p.precio }}
-    </li>
-</ul>   
+        <div class="catalogo__stats" *ngIf="!loading && !errorMsg">
+            <span>{{ totalProductos }} productos</span>
+            <span>Mostrando {{ totalFiltrados }}</span>
+            <span>{{ totalStock }} unidades en stock</span>
+        </div>
+    </header>
+
+    <div *ngIf="loading" class="estado estado--loading">Cargando catálogo...</div>
+
+    <div *ngIf="!loading && errorMsg" class="estado estado--error">
+        <p>{{ errorMsg }}</p>
+        <button type="button" (click)="cargarCatalogo()">Reintentar</button>
+    </div>
+
+    <div class="catalogo__layout" *ngIf="!loading && !errorMsg">
+        <div>
+            <section class="filtros" *ngIf="productos.length > 0">
+                <div class="filtros__campo">
+                    <label for="busquedaProducto">Buscar</label>
+                    <input
+                        id="busquedaProducto"
+                        type="text"
+                        [value]="terminoBusqueda"
+                        (input)="actualizarBusqueda($any($event.target).value)"
+                        placeholder="Ej: Vainilla" />
+                </div>
+
+                <div class="filtros__campo">
+                    <label for="categoriaProducto">Categoría</label>
+                    <select
+                        id="categoriaProducto"
+                        [value]="categoriaSeleccionada"
+                        (change)="actualizarCategoria($any($event.target).value)">
+                        <option *ngFor="let categoria of categoriasDisponibles" [value]="categoria">{{ categoria }}</option>
+                    </select>
+                </div>
+
+                <button type="button" class="filtros__limpiar" (click)="limpiarFiltros()">Limpiar</button>
+            </section>
+
+            <div *ngIf="productos.length === 0" class="estado">
+                No hay productos disponibles.
+            </div>
+
+            <div *ngIf="productos.length > 0 && totalFiltrados === 0" class="estado">
+                No hay resultados para los filtros actuales.
+            </div>
+
+            <div class="productos-grid" *ngIf="totalFiltrados > 0">
+                <article class="producto-card" *ngFor="let producto of productosFiltrados; trackBy: trackByProductoId">
+                    <p class="producto-card__categoria">{{ producto.categoria }}</p>
+                    <h3>{{ producto.nombre }}</h3>
+                    <p class="producto-card__precio">{{ producto.precio | currency:'USD':'symbol':'1.2-2' }}</p>
+
+                    <p class="producto-card__stock" [class.sin-stock]="producto.stock === 0">
+                        Stock: {{ producto.stock }}
+                    </p>
+
+                    <button
+                        type="button"
+                        class="producto-card__btn"
+                        [disabled]="producto.stock === 0 || estaAgotado(producto.id)"
+                        (click)="agregarAlCarrito(producto)">
+                        {{ producto.stock === 0 ? 'Sin stock' : 'Agregar' }}
+                    </button>
+                </article>
+            </div>
+        </div>
+
+        <aside class="carrito">
+            <h3>Venta rápida</h3>
+
+            <p class="carrito__vacio" *ngIf="carrito.length === 0">Aún no agregaste productos.</p>
+
+            <ul class="carrito__lista" *ngIf="carrito.length > 0">
+                <li *ngFor="let item of carrito; trackBy: trackByCarritoId">
+                    <div>
+                        <strong>{{ item.nombre }}</strong>
+                        <small>{{ item.precio | currency:'USD':'symbol':'1.2-2' }} c/u</small>
+                    </div>
+
+                    <div class="carrito__acciones">
+                        <button type="button" (click)="decrementarCantidad(item)">-</button>
+                        <span>{{ item.cantidad }}</span>
+                        <button type="button" [disabled]="item.cantidad >= item.stockDisponible" (click)="incrementarCantidad(item)">+</button>
+                        <button type="button" class="btn-eliminar" (click)="eliminarDelCarrito(item.productoId)">Quitar</button>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="carrito__resumen">
+                <p>Ítems: {{ totalCantidad }}</p>
+                <p>Total: {{ totalVenta | currency:'USD':'symbol':'1.2-2' }}</p>
+            </div>
+
+            <div class="carrito__botones">
+                <button type="button" (click)="vaciarCarrito()" [disabled]="carrito.length === 0">Vaciar</button>
+                <button type="button" (click)="confirmarVentaDemo()" [disabled]="carrito.length === 0">Pagar (simulado)</button>
+            </div>
+
+            <p class="carrito__ok" *ngIf="ventaMsg">{{ ventaMsg }}</p>
+
+            <section class="ticket" *ngIf="ultimoTicket">
+                <header class="ticket__header">
+                    <h4>Ticket demo</h4>
+                    <button type="button" (click)="cerrarTicket()">Cerrar</button>
+                </header>
+
+                <p>#{{ ultimoTicket.id }}</p>
+                <p>{{ ultimoTicket.fecha | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+
+                <ul class="ticket__lista">
+                    <li *ngFor="let item of ultimoTicket.items">
+                        <span>{{ item.nombre }} x{{ item.cantidad }}</span>
+                        <strong>{{ item.subtotal | currency:'USD':'symbol':'1.2-2' }}</strong>
+                    </li>
+                </ul>
+
+                <p class="ticket__total">Total final: {{ ultimoTicket.total | currency:'USD':'symbol':'1.2-2' }}</p>
+            </section>
+
+            <section class="ventas-recientes">
+                <h4>Dashboard rápido</h4>
+
+                <div class="ventas-recientes__stats">
+                    <div>
+                        <small>Ventas recientes</small>
+                        <strong>{{ cantidadVentasRecientes }}</strong>
+                    </div>
+                    <div>
+                        <small>Total ventas</small>
+                        <strong>{{ totalVentasRecientes | currency:'USD':'symbol':'1.2-2' }}</strong>
+                    </div>
+                </div>
+
+                <p class="ventas-recientes__vacio" *ngIf="ventasRecientes.length === 0">Sin ventas recientes.</p>
+
+                <ul class="ventas-recientes__lista" *ngIf="ventasRecientes.length > 0">
+                    <li *ngFor="let venta of ventasRecientes; trackBy: trackByVentaId">
+                        <span>#{{ venta.id }}</span>
+                        <span>{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
+                        <strong>{{ venta.total | currency:'USD':'symbol':'1.2-2' }}</strong>
+                    </li>
+                </ul>
+            </section>
+        </aside>
+    </div>
+</section>

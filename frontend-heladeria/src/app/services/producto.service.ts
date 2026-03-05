@@ -2,6 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE } from '../app.config';
+import { Producto } from '../models/producto.model';
+
+export interface InventarioItem {
+    productoId: number;
+    sede: string;
+    stock: number;
+}
+
+export interface VentaRecienteItem {
+    id: number;
+    total: number;
+    fecha: string;
+}
 
 @Injectable({
     providedIn: 'root'
@@ -12,15 +25,15 @@ export class ProductoService {
 
     constructor(private http: HttpClient) {}
 
-    getProductos(): Observable<any[]> {
-        return this.http.get<any[]>(this.apiUrl);
+    getProductos(): Observable<Producto[]> {
+        return this.http.get<Producto[]>(this.apiUrl);
     }
 
-    getInventario(): Observable<any[]> {
-        return this.http.get<any[]>(`${API_BASE}/api/mock/inventario`);
+    getInventario(): Observable<InventarioItem[]> {
+        return this.http.get<InventarioItem[]>(`${API_BASE}/api/mock/inventario`);
     }
 
-    getVentasRecent(): Observable<any[]> {
-        return this.http.get<any[]>(`${API_BASE}/api/mock/ventas/recent`);
+    getVentasRecent(): Observable<VentaRecienteItem[]> {
+        return this.http.get<VentaRecienteItem[]>(`${API_BASE}/api/mock/ventas/recent`);
     }
 }
