@@ -14,7 +14,7 @@ const { chromium } = require('playwright');
     page.on('response', resp => {
       try {
         const u = resp.url();
-        if (u.includes('/api/mock')) {
+        if (u.includes('/api/mock') || u.includes('/ventas')) {
           observed.add(u);
           console.log('Observed response:', u, resp.status());
         }
@@ -25,15 +25,31 @@ const { chromium } = require('playwright');
     await page.waitForTimeout(1500);
 
     // Helper to fetch sample if observed or wait for future response
-    async function fetchSample(path) {
-      const full = `http://localhost:8080${path}`;
-      if (observed.has(full)) {
-        const resp = await page.request.get(full).catch(() => null);
-        if (resp && resp.ok()) return await resp.json().catch(() => null);
-        return null;
+    async function fetchSample(pathOrPaths) {
+      const paths = Array.isArray(pathOrPaths) ? pathOrPaths : [pathOrPaths];
+
+      for (const path of paths) {
+        const full = `http://localhost:8080${path}`;
+        if (observed.has(full)) {
+          const resp = await page.request.get(full).catch(() => null);
+          if (resp && resp.ok()) return await resp.json().catch(() => null);
+        }
       }
-      const resp = await page.waitForResponse(r => r.url().includes(path) && r.status() === 200, { timeout }).catch(() => null);
+
+      const resp = await page.waitForResponse(
+        r => paths.some(path => r.url().includes(path)) && r.status() === 200,
+        { timeout }
+      ).catch(() => null);
       if (resp) return await resp.json().catch(() => null);
+
+      // Final fallback: call endpoints directly even if frontend request was too fast to observe.
+      for (const path of paths) {
+        const direct = await page.request.get(`http://localhost:8080${path}`).catch(() => null);
+        if (direct && direct.ok()) {
+          return await direct.json().catch(() => null);
+        }
+      }
+
       return null;
     }
 
@@ -49,7 +65,7 @@ const { chromium } = require('playwright');
       result.inventario = true;
     }
 
-    const ventasJson = await fetchSample('/api/mock/ventas/recent');
+    const ventasJson = await fetchSample(['/ventas', '/api/mock/ventas/recent']);
     if (ventasJson) {
       console.log('ventas response sample:', ventasJson);
       result.ventas = true;

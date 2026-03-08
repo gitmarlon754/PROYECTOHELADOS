@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+.tpv-header {
+  z-index: 40;
+  background: var(--card);
+  border-color: var(--border) !important;
+}
+
+.tpv-header-inner {
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.brand-logo {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 1rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@media (min-width: 992px) {
+  .brand-logo {
+    width: 3rem;
+    height: 3rem;
+  }
+}

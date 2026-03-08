@@ -1,0 +1,38 @@
+:host {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  z-index: 60;
+}
+
+.toast-body {
+  color: white;
+}
+
+.toast-body.success {
+  background: var(--success);
+}
+
+.toast-body.error {
+  background: var(--destructive);
+}
+
+.toast-body.info {
+  background: var(--secondary);
+}
+
+.toast-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.toast-close {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}

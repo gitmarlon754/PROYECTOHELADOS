@@ -20,4 +20,11 @@ public class VentaServiceImpl implements VentaService {
     public List<Venta> listar() {
         return ventaRepository.findAll();
     }
+
+    @Override
+    public Venta registrar(double total) {
+        Venta venta = new Venta();
+        venta.setTotal(total);
+        return ventaRepository.save(venta);
+    }
 }

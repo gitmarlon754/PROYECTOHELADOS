@@ -16,6 +16,10 @@ export interface VentaRecienteItem {
     fecha: string;
 }
 
+export interface VentaCreateRequest {
+    total: number;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -35,5 +39,13 @@ export class ProductoService {
 
     getVentasRecent(): Observable<VentaRecienteItem[]> {
         return this.http.get<VentaRecienteItem[]>(`${API_BASE}/api/mock/ventas/recent`);
+    }
+
+    getVentas(): Observable<VentaRecienteItem[]> {
+        return this.http.get<VentaRecienteItem[]>(`${API_BASE}/ventas`);
+    }
+
+    registrarVenta(request: VentaCreateRequest): Observable<VentaRecienteItem> {
+        return this.http.post<VentaRecienteItem>(`${API_BASE}/ventas`, request);
     }
 }

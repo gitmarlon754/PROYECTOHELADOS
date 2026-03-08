@@ -1,155 +1,272 @@
-<section class="catalogo">
-    <header class="catalogo__header">
-        <div>
-            <h2>Catálogo de productos</h2>
-            <p class="catalogo__subtitle">Vista rápida para demostración del cliente</p>
+<section class="tpv-page">Nequi
+    <header class="tpv-header border rounded-4 shadow-sm">
+        <div class="tpv-header__brand">
+            <div class="tpv-header__logo">
+                <i class="bi bi-cone-striped"></i>
+            </div>
+            <div>
+                <h2 class="mb-0">Dolce Gelato</h2>
+                <p class="mb-0">Sistema TPV</p>
+            </div>
         </div>
 
-        <div class="catalogo__stats" *ngIf="!loading && !errorMsg">
-            <span>{{ totalProductos }} productos</span>
-            <span>Mostrando {{ totalFiltrados }}</span>
-            <span>{{ totalStock }} unidades en stock</span>
+        <div class="tpv-header__meta">
+            <span><i class="bi bi-clock"></i> {{ horaActual }}</span>
+            <span>{{ cantidadVentasRecientes }} ventas hoy</span>
+        </div>
+
+        <div class="tpv-header__actions">
+            <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="loading || procesandoPago" (click)="refrescarPanel()">
+                <i class="bi bi-arrow-clockwise"></i>
+                Actualizar
+            </button>
+            <button
+                type="button"
+                class="btn btn-sm"
+                [class.btn-primary]="mostrarMetricas"
+                [class.btn-outline-secondary]="!mostrarMetricas"
+                (click)="alternarMetricas()">
+                <i class="bi bi-bar-chart-line"></i>
+                {{ mostrarMetricas ? 'Ocultar métricas' : 'Métricas' }}
+            </button>
         </div>
     </header>
 
-    <div *ngIf="loading" class="estado estado--loading">Cargando catálogo...</div>
+    <section class="metrics-wrap border rounded-4" *ngIf="mostrarMetricas">
+        <div class="metrics-head">
+            <h3 class="mb-0">Métricas del Día</h3>
+            <button type="button" class="btn btn-light btn-sm" (click)="alternarMetricas()"><i class="bi bi-x-lg"></i></button>
+        </div>
 
-    <div *ngIf="!loading && errorMsg" class="estado estado--error">
-        <p>{{ errorMsg }}</p>
-        <button type="button" (click)="cargarCatalogo()">Reintentar</button>
+        <div class="metrics-grid">
+            <article class="metric-card">
+                <small>Ventas totales</small>
+                <strong>{{ totalVentasRecientes | currency:'USD':'symbol':'1.2-2' }}</strong>
+            </article>
+            <article class="metric-card">
+                <small>Tickets</small>
+                <strong>{{ cantidadVentasRecientes }}</strong>
+            </article>
+            <article class="metric-card">
+                <small>Ticket medio</small>
+                <strong>{{ ticketPromedio | currency:'USD':'symbol':'1.2-2' }}</strong>
+            </article>
+            <article class="metric-card">
+                <small>Artículos vendidos</small>
+                <strong>{{ articulosVendidosHoy }}</strong>
+            </article>
+        </div>
+
+        <div class="metrics-pay">
+            <article class="pay-card">
+                <p class="mb-0"><i class="bi bi-phone"></i> Nequi</p>
+                <strong>{{ totalVentasTarjeta | currency:'USD':'symbol':'1.2-2' }}</strong>
+                <small>{{ ventasTarjetaCount }} pagos</small>
+            </article>
+            <article class="pay-card">
+                <p class="mb-0"><i class="bi bi-cash-coin"></i> Efectivo</p>
+                <strong>{{ totalVentasEfectivo | currency:'USD':'symbol':'1.2-2' }}</strong>
+                <small>{{ ventasEfectivoCount }} pagos</small>
+            </article>
+        </div>
+
+        <section class="metrics-chart">
+            <h4>Comportamiento del día</h4>
+            <div class="metrics-chart__row">
+                <span>Progreso de ventas</span>
+                <strong>{{ chartDayProgressPct | number:'1.0-0' }}%</strong>
+            </div>
+            <div class="metrics-chart__bar-wrap">
+                <div class="metrics-chart__bar metrics-chart__bar--total" [style.width.%]="chartDayProgressPct"></div>
+            </div>
+
+            <div class="metrics-chart__row">
+                <span>Nequi</span>
+                <strong>{{ chartNequiPct | number:'1.0-0' }}%</strong>
+            </div>
+            <div class="metrics-chart__bar-wrap">
+                <div class="metrics-chart__bar metrics-chart__bar--card" [style.width.%]="chartNequiPct"></div>
+            </div>
+
+            <div class="metrics-chart__row">
+                <span>Efectivo</span>
+                <strong>{{ chartEfectivoPct | number:'1.0-0' }}%</strong>
+            </div>
+            <div class="metrics-chart__bar-wrap">
+                <div class="metrics-chart__bar metrics-chart__bar--nequi" [style.width.%]="chartEfectivoPct"></div>
+            </div>
+        </section>
+
+        <section *ngIf="ventasRecientes.length > 0" class="recent-sales">
+            <h4>Últimas Ventas</h4>
+            <div class="recent-sales__list">
+                <article class="recent-sales__item" *ngFor="let venta of ventasRecientes; trackBy: trackByVentaId">
+                    <div>
+                        <span>#{{ venta.id }}</span>
+                        <small>{{ formatearHora(venta.fecha) }}</small>
+                    </div>
+                    <div>
+                        <i class="bi" [class.bi-phone]="venta.metodoPago === 'card'" [class.bi-cash-coin]="venta.metodoPago !== 'card'"></i>
+                        <strong>{{ venta.total | currency:'USD':'symbol':'1.2-2' }}</strong>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </section>
+
+    <div *ngIf="loading" class="estado estado--loading mt-3">
+        <i class="bi bi-arrow-repeat spin"></i>
+        <span>Cargando catálogo...</span>
     </div>
 
-    <div class="catalogo__layout" *ngIf="!loading && !errorMsg">
+    <div *ngIf="!loading && errorMsg" class="estado estado--error mt-3">
         <div>
-            <section class="filtros" *ngIf="productos.length > 0">
-                <div class="filtros__campo">
-                    <label for="busquedaProducto">Buscar</label>
-                    <input
-                        id="busquedaProducto"
-                        type="text"
-                        [value]="terminoBusqueda"
-                        (input)="actualizarBusqueda($any($event.target).value)"
-                        placeholder="Ej: Vainilla" />
-                </div>
+            <strong>No se pudo sincronizar el panel</strong>
+            <p class="mb-0">{{ errorMsg }}</p>
+        </div>
+        <button type="button" class="btn btn-light btn-sm" (click)="cargarCatalogo()">Reintentar</button>
+    </div>
 
-                <div class="filtros__campo">
-                    <label for="categoriaProducto">Categoría</label>
-                    <select
-                        id="categoriaProducto"
-                        [value]="categoriaSeleccionada"
-                        (change)="actualizarCategoria($any($event.target).value)">
-                        <option *ngFor="let categoria of categoriasDisponibles" [value]="categoria">{{ categoria }}</option>
-                    </select>
-                </div>
+    <main class="tpv-main" *ngIf="!loading && !errorMsg">
+        <section class="catalog-section">
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input
+                    id="busquedaProducto"
+                    type="text"
+                    [value]="terminoBusqueda"
+                    (input)="actualizarBusqueda($any($event.target).value)"
+                    placeholder="Buscar producto..." />
+            </div>
 
-                <button type="button" class="filtros__limpiar" (click)="limpiarFiltros()">Limpiar</button>
-            </section>
+            <div class="categories-row">
+                <button
+                    type="button"
+                    class="btn btn-sm category-btn"
+                    *ngFor="let categoria of categoriasDisponibles"
+                    [class.btn-primary]="categoriaSeleccionada === categoria"
+                    [class.btn-outline-secondary]="categoriaSeleccionada !== categoria"
+                    (click)="actualizarCategoria(categoria)">
+                    <i class="bi" [class]="categoriaIcono(categoria)"></i>
+                    <span>{{ categoria }}</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-dark" (click)="limpiarFiltros()">Limpiar</button>
+            </div>
 
             <div *ngIf="productos.length === 0" class="estado">
-                No hay productos disponibles.
+                <i class="bi bi-box-seam"></i>
+                <span>No hay productos disponibles.</span>
             </div>
 
             <div *ngIf="productos.length > 0 && totalFiltrados === 0" class="estado">
-                No hay resultados para los filtros actuales.
+                <i class="bi bi-funnel"></i>
+                <span>No hay resultados para los filtros actuales.</span>
             </div>
 
             <div class="productos-grid" *ngIf="totalFiltrados > 0">
-                <article class="producto-card" *ngFor="let producto of productosFiltrados; trackBy: trackByProductoId">
-                    <p class="producto-card__categoria">{{ producto.categoria }}</p>
+                <article
+                    class="product-card"
+                    *ngFor="let producto of productosFiltrados; trackBy: trackByProductoId"
+                    [ngClass]="categoriaClase(producto.categoria)">
+                    <div class="product-card__top">
+                        <span class="product-card__cat">{{ producto.categoria }}</span>
+                        <span class="product-card__stock">{{ producto.stock }}</span>
+                    </div>
                     <h3>{{ producto.nombre }}</h3>
-                    <p class="producto-card__precio">{{ producto.precio | currency:'USD':'symbol':'1.2-2' }}</p>
-
-                    <p class="producto-card__stock" [class.sin-stock]="producto.stock === 0">
-                        Stock: {{ producto.stock }}
-                    </p>
-
+                    <p class="product-card__price">{{ producto.precio | currency:'USD':'symbol':'1.2-2' }}</p>
                     <button
                         type="button"
-                        class="producto-card__btn"
+                        class="btn btn-sm product-card__add"
                         [disabled]="producto.stock === 0 || estaAgotado(producto.id)"
                         (click)="agregarAlCarrito(producto)">
-                        {{ producto.stock === 0 ? 'Sin stock' : 'Agregar' }}
+                        <i class="bi bi-plus-lg"></i>
                     </button>
                 </article>
             </div>
-        </div>
+        </section>
 
-        <aside class="carrito">
-            <h3>Venta rápida</h3>
-
-            <p class="carrito__vacio" *ngIf="carrito.length === 0">Aún no agregaste productos.</p>
-
-            <ul class="carrito__lista" *ngIf="carrito.length > 0">
-                <li *ngFor="let item of carrito; trackBy: trackByCarritoId">
-                    <div>
-                        <strong>{{ item.nombre }}</strong>
-                        <small>{{ item.precio | currency:'USD':'symbol':'1.2-2' }} c/u</small>
-                    </div>
-
-                    <div class="carrito__acciones">
-                        <button type="button" (click)="decrementarCantidad(item)">-</button>
-                        <span>{{ item.cantidad }}</span>
-                        <button type="button" [disabled]="item.cantidad >= item.stockDisponible" (click)="incrementarCantidad(item)">+</button>
-                        <button type="button" class="btn-eliminar" (click)="eliminarDelCarrito(item.productoId)">Quitar</button>
-                    </div>
-                </li>
-            </ul>
-
-            <div class="carrito__resumen">
-                <p>Ítems: {{ totalCantidad }}</p>
-                <p>Total: {{ totalVenta | currency:'USD':'symbol':'1.2-2' }}</p>
+        <aside class="cart-panel border rounded-4 shadow-sm">
+            <div class="cart-panel__head">
+                <div>
+                    <h3 class="mb-0">Carrito</h3>
+                    <p class="mb-0">{{ totalCantidad }} artículos</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-light text-danger" *ngIf="carrito.length > 0" (click)="vaciarCarrito()">Vaciar</button>
             </div>
 
-            <div class="carrito__botones">
-                <button type="button" (click)="vaciarCarrito()" [disabled]="carrito.length === 0">Vaciar</button>
-                <button type="button" (click)="confirmarVentaDemo()" [disabled]="carrito.length === 0">Pagar (simulado)</button>
-            </div>
-
-            <p class="carrito__ok" *ngIf="ventaMsg">{{ ventaMsg }}</p>
-
-            <section class="ticket" *ngIf="ultimoTicket">
-                <header class="ticket__header">
-                    <h4>Ticket demo</h4>
-                    <button type="button" (click)="cerrarTicket()">Cerrar</button>
-                </header>
-
-                <p>#{{ ultimoTicket.id }}</p>
-                <p>{{ ultimoTicket.fecha | date:'dd/MM/yyyy HH:mm:ss' }}</p>
-
-                <ul class="ticket__lista">
-                    <li *ngFor="let item of ultimoTicket.items">
-                        <span>{{ item.nombre }} x{{ item.cantidad }}</span>
-                        <strong>{{ item.subtotal | currency:'USD':'symbol':'1.2-2' }}</strong>
-                    </li>
-                </ul>
-
-                <p class="ticket__total">Total final: {{ ultimoTicket.total | currency:'USD':'symbol':'1.2-2' }}</p>
-            </section>
-
-            <section class="ventas-recientes">
-                <h4>Dashboard rápido</h4>
-
-                <div class="ventas-recientes__stats">
-                    <div>
-                        <small>Ventas recientes</small>
-                        <strong>{{ cantidadVentasRecientes }}</strong>
-                    </div>
-                    <div>
-                        <small>Total ventas</small>
-                        <strong>{{ totalVentasRecientes | currency:'USD':'symbol':'1.2-2' }}</strong>
-                    </div>
+            <div class="cart-items-zone">
+                <div class="cart-empty" *ngIf="carrito.length === 0">
+                    <i class="bi bi-cart3"></i>
+                    <p>El carrito está vacío</p>
+                    <small>Agrega productos para comenzar</small>
                 </div>
 
-                <p class="ventas-recientes__vacio" *ngIf="ventasRecientes.length === 0">Sin ventas recientes.</p>
+                <article class="cart-item" *ngFor="let item of carrito; trackBy: trackByCarritoId">
+                    <div class="cart-item__info">
+                        <strong>{{ item.nombre }}</strong>
+                        <small>{{ item.precio | currency:'USD':'symbol':'1.2-2' }}</small>
+                    </div>
+                    <div class="cart-item__qty">
+                        <button type="button" class="btn btn-sm" (click)="decrementarCantidad(item)">-</button>
+                        <span>{{ item.cantidad }}</span>
+                        <button type="button" class="btn btn-sm" [disabled]="item.cantidad >= item.stockDisponible" (click)="incrementarCantidad(item)">+</button>
+                    </div>
+                    <p class="cart-item__total">{{ (item.precio * item.cantidad) | currency:'USD':'symbol':'1.2-2' }}</p>
+                </article>
+            </div>
 
-                <ul class="ventas-recientes__lista" *ngIf="ventasRecientes.length > 0">
-                    <li *ngFor="let venta of ventasRecientes; trackBy: trackByVentaId">
-                        <span>#{{ venta.id }}</span>
-                        <span>{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
-                        <strong>{{ venta.total | currency:'USD':'symbol':'1.2-2' }}</strong>
-                    </li>
-                </ul>
-            </section>
+            <div class="cart-summary">
+                <div><span>Subtotal</span><strong>{{ subtotalVenta | currency:'USD':'symbol':'1.2-2' }}</strong></div>
+                <div class="cart-summary__total"><span>Total</span><strong>{{ totalConIva | currency:'USD':'symbol':'1.2-2' }}</strong></div>
+            </div>
+
+            <div class="cart-actions">
+                <button type="button" class="btn btn-outline-secondary" [disabled]="carrito.length === 0 || procesandoPago" (click)="confirmarVentaDemo('cash')">
+                    <i class="bi bi-cash-coin"></i>
+                    {{ procesandoPago ? 'Procesando...' : 'Efectivo' }}
+                </button>
+                <button type="button" class="btn btn-primary" [disabled]="carrito.length === 0 || procesandoPago" (click)="confirmarVentaDemo('card')">
+                    <i class="bi bi-phone"></i>
+                    {{ procesandoPago ? 'Procesando...' : 'Nequi' }}
+                </button>
+            </div>
+
+            <div class="carrito__mensaje" role="status" *ngIf="ventaMsg"
+                [class.is-success]="ventaMsgTipo === 'success'"
+                [class.is-warning]="ventaMsgTipo === 'warning'"
+                [class.is-error]="ventaMsgTipo === 'error'"
+                [class.is-info]="ventaMsgTipo === 'info'">
+                <i class="bi"
+                    [class.bi-check-circle]="ventaMsgTipo === 'success'"
+                    [class.bi-exclamation-triangle]="ventaMsgTipo === 'warning'"
+                    [class.bi-x-circle]="ventaMsgTipo === 'error'"
+                    [class.bi-info-circle]="ventaMsgTipo === 'info'"></i>
+                <span>{{ ventaMsg }}</span>
+            </div>
         </aside>
+    </main>
+
+    <section class="ticket-modal" *ngIf="ultimoTicket">
+        <article class="ticket-modal__card">
+            <header>
+                <h4><i class="bi bi-receipt"></i> Ticket de venta</h4>
+                <button type="button" class="btn btn-sm btn-light" (click)="cerrarTicket()">Cerrar</button>
+            </header>
+            <p>#{{ ultimoTicket.id }} · {{ ultimoTicket.fecha | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+            <p>Método: <strong>{{ ultimoTicket.metodoPago === 'card' ? 'Nequi' : 'Efectivo' }}</strong></p>
+            <ul>
+                <li *ngFor="let item of ultimoTicket.items">
+                    <span>{{ item.nombre }} x{{ item.cantidad }}</span>
+                    <strong>{{ item.subtotal | currency:'USD':'symbol':'1.2-2' }}</strong>
+                </li>
+            </ul>
+            <p class="ticket-modal__total">Total: {{ ultimoTicket.total | currency:'USD':'symbol':'1.2-2' }}</p>
+        </article>
+    </section>
+
+    <div class="toast-venta" *ngIf="toastMsg" [class.is-success]="toastTipo === 'success'" [class.is-warning]="toastTipo === 'warning'" [class.is-error]="toastTipo === 'error'" [class.is-info]="toastTipo === 'info'" role="status">
+        <i class="bi" [class.bi-check-circle-fill]="toastTipo === 'success'" [class.bi-exclamation-triangle-fill]="toastTipo === 'warning'" [class.bi-x-circle-fill]="toastTipo === 'error'" [class.bi-info-circle-fill]="toastTipo === 'info'"></i>
+        <span>{{ toastMsg }}</span>
+        <button type="button" class="btn btn-sm btn-light" (click)="cerrarToast()">Cerrar</button>
     </div>
 </section>

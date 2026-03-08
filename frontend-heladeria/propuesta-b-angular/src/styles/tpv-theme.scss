@@ -1,0 +1,141 @@
+:root {
+  --background: #fff8f2;
+  --foreground: #4a3125;
+  --card: #ffffff;
+  --primary: #e67482;
+  --primary-foreground: #ffffff;
+  --secondary: #7a5c43;
+  --secondary-foreground: #ffffff;
+  --muted: #f7efe8;
+  --muted-foreground: #8e7563;
+  --accent: #7cc99b;
+  --accent-foreground: #1f4d32;
+  --destructive: #d55353;
+  --destructive-foreground: #ffffff;
+  --border: #f1e2d6;
+  --success: #66be8a;
+  --success-foreground: #ffffff;
+}
+
+body {
+  background: radial-gradient(circle at 0% 0%, #fff3e6 0%, #fff8f2 45%, #fffefb 100%);
+  color: var(--foreground);
+  font-family: 'Nunito', 'Segoe UI', Tahoma, sans-serif;
+}
+
+.heading-font {
+  font-family: 'Quicksand', 'Segoe UI', Tahoma, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.text-foreground {
+  color: var(--foreground) !important;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.bg-background {
+  background: var(--background) !important;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.product-cono {
+  background: #fff0d8;
+  border-color: #f3d8a8;
+}
+
+.product-tarrina {
+  background: #ffe7ef;
+  border-color: #f8c7da;
+}
+
+.product-copa {
+  background: #e8f9eb;
+  border-color: #c5e8cb;
+}
+
+.product-especial {
+  background: #fff7db;
+  border-color: #f2e4ac;
+}
+
+.product-bebida {
+  background: #efe8ff;
+  border-color: #d9ccff;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out forwards;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.4s ease-out forwards;
+}

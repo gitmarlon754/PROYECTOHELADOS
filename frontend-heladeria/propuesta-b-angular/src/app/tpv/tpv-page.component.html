@@ -1,0 +1,44 @@
+<div class="tpv-page min-vh-100 d-flex flex-column bg-background">
+  <app-tpv-header
+    [showMetrics]="showMetrics"
+    [salesCount]="sales.length"
+    (toggleMetrics)="toggleMetrics()"
+  />
+
+  <app-sales-metrics
+    *ngIf="showMetrics"
+    [sales]="sales"
+    (close)="showMetrics = false"
+  />
+
+  <main class="flex-grow-1 container-fluid px-3 px-lg-4 py-3 py-lg-4 tpv-main">
+    <div class="row g-4 justify-content-center tpv-main-row">
+      <div class="col-12 col-lg-8 col-xl-9">
+        <app-product-catalog (addToCart)="addToCart($event)" />
+      </div>
+
+      <aside class="col-12 col-lg-4 col-xl-3 d-flex">
+        <app-cart-panel
+          class="w-100"
+          [items]="cart"
+          (updateQuantity)="updateQuantity($event.productId, $event.quantity)"
+          (clearCart)="clearCart()"
+          (processPayment)="processPayment($event)"
+        />
+      </aside>
+    </div>
+  </main>
+
+  <app-ticket-modal
+    *ngIf="showTicket && lastSale"
+    [sale]="lastSale"
+    (close)="closeTicket()"
+  />
+
+  <app-tpv-toast
+    *ngIf="toast"
+    [message]="toast.message"
+    [type]="toast.type"
+    (close)="closeToast()"
+  />
+</div>

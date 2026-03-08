@@ -1,0 +1,117 @@
+<section class="cart-panel border shadow-lg d-flex flex-column overflow-hidden w-100">
+  <div class="p-3 p-lg-4 border-bottom bg-soft">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-box d-flex align-items-center justify-content-center">
+          <i class="bi bi-cart3"></i>
+        </div>
+        <div>
+          <h2 class="h6 fw-bold mb-0">Carrito</h2>
+          <p class="small text-muted mb-0">
+            {{ itemCount }} {{ itemCount === 1 ? 'articulo' : 'articulos' }}
+          </p>
+        </div>
+      </div>
+
+      <button
+        *ngIf="items.length > 0"
+        type="button"
+        class="btn btn-sm btn-light text-danger rounded-3 d-inline-flex align-items-center gap-1"
+        (click)="clearCart.emit()"
+      >
+        <i class="bi bi-trash"></i>
+        <span class="d-none d-sm-inline">Vaciar</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="flex-grow-1 overflow-auto p-3 p-lg-4 d-flex flex-column gap-2 cart-items-zone">
+    <ng-container *ngIf="items.length === 0; else hasItems">
+      <div class="empty-state d-flex flex-column align-items-center justify-content-center text-muted text-center py-5">
+        <i class="bi bi-cart3 fs-1 opacity-25"></i>
+        <p class="mb-0">El carrito esta vacio</p>
+        <p class="small mb-0">Selecciona productos para comenzar</p>
+      </div>
+    </ng-container>
+
+    <ng-template #hasItems>
+      <article
+        *ngFor="let item of items; index as i; trackBy: trackByProductId"
+        class="cart-item border rounded-3 p-2 p-lg-3 d-flex align-items-center gap-2 gap-lg-3 animate-slide-in"
+        [style.animationDelay]="(i * 50) + 'ms'"
+      >
+        <span class="fs-4">{{ item.product.icon }}</span>
+
+        <div class="flex-grow-1 min-w-0">
+          <p class="mb-0 fw-semibold text-truncate">{{ item.product.name }}</p>
+          <p class="mb-0 small text-primary fw-bold">{{ item.product.price.toFixed(2) }}EUR</p>
+        </div>
+
+        <div class="d-flex align-items-center gap-1">
+          <button
+            type="button"
+            class="btn btn-sm quantity-btn bg-muted"
+            (click)="updateQuantity.emit({ productId: item.product.id, quantity: item.quantity - 1 })"
+          >
+            <i [class]="item.quantity === 1 ? 'bi bi-x text-danger' : 'bi bi-dash' "></i>
+          </button>
+          <span class="fw-bold text-center quantity-value">{{ item.quantity }}</span>
+          <button
+            type="button"
+            class="btn btn-sm quantity-btn bg-primary-soft text-primary"
+            (click)="updateQuantity.emit({ productId: item.product.id, quantity: item.quantity + 1 })"
+          >
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
+
+        <div class="text-end line-total">
+          <p class="fw-bold mb-0">{{ (item.product.price * item.quantity).toFixed(2) }}EUR</p>
+        </div>
+      </article>
+    </ng-template>
+  </div>
+
+  <div class="p-3 p-lg-4 border-top bg-soft d-flex flex-column gap-3">
+    <div class="small d-flex flex-column gap-1">
+      <div class="d-flex justify-content-between text-muted">
+        <span>Subtotal</span>
+        <span>{{ subtotal.toFixed(2) }}EUR</span>
+      </div>
+      <div class="d-flex justify-content-between text-muted">
+        <span>IVA (10%)</span>
+        <span>{{ tax.toFixed(2) }}EUR</span>
+      </div>
+      <hr class="my-1" />
+      <div class="d-flex justify-content-between fs-5 fw-bold">
+        <span>Total</span>
+        <span class="text-primary">{{ total.toFixed(2) }}EUR</span>
+      </div>
+    </div>
+
+    <div class="row g-2">
+      <div class="col-6">
+        <button
+          type="button"
+          class="btn btn-outline-secondary w-100 h-100 rounded-3 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 py-3"
+          [disabled]="items.length === 0"
+          (click)="processPayment.emit('cash')"
+        >
+          <i class="bi bi-cash-coin"></i>
+          Efectivo
+        </button>
+      </div>
+      <div class="col-6">
+        <button
+          type="button"
+          class="btn btn-primary w-100 h-100 rounded-3 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 py-3"
+          [disabled]="items.length === 0"
+          (click)="processPayment.emit('card')"
+        >
+          <i class="bi bi-credit-card"></i>
+          Tarjeta
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

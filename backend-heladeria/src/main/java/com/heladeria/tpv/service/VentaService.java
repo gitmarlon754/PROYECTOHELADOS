@@ -5,4 +5,5 @@ import java.util.List;
 
 public interface VentaService {
     List<Venta> listar();
+    Venta registrar(double total);
 }

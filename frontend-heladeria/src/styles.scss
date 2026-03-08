@@ -1,1 +1,128 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'bootstrap/scss/bootstrap';
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito:wght@400;500;600;700&display=swap');
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+:root {
+	--bg-cream: #fff8ef;
+	--bg-warm: #ffe9d3;
+	--surface: #fffefb;
+	--surface-2: #fff4e9;
+	--ink: #2f241e;
+	--ink-soft: #6f5a4b;
+	--accent: #f46f42;
+	--accent-2: #2fb08f;
+	--line: #efddca;
+	--success: #23896c;
+	--danger: #c94d41;
+	--shadow: 0 14px 35px rgba(90, 52, 33, 0.12);
+	--radius-lg: 18px;
+	--radius-md: 12px;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	min-height: 100%;
+	font-family: 'Nunito', sans-serif;
+	color: var(--ink);
+	background: radial-gradient(circle at 15% 5%, #fff6e8 0%, var(--bg-cream) 45%),
+		radial-gradient(circle at 80% 12%, #ffe2c2 0%, rgba(255, 226, 194, 0.2) 38%),
+		var(--bg-cream);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+	font-family: 'Fraunces', serif;
+	letter-spacing: 0.01em;
+}
+
+.app-shell {
+	min-height: 100vh;
+	padding: 1.25rem 0 2rem;
+	position: relative;
+}
+
+.app-frame {
+	max-width: 1420px;
+	margin: 0 auto;
+}
+
+.app-shell::before,
+.app-shell::after {
+	content: '';
+	position: fixed;
+	width: 240px;
+	height: 240px;
+	border-radius: 50%;
+	filter: blur(40px);
+	z-index: -1;
+	opacity: 0.5;
+}
+
+.app-shell::before {
+	right: -80px;
+	top: -80px;
+	background: #ffd8b5;
+}
+
+.app-shell::after {
+	left: -70px;
+	bottom: -60px;
+	background: #c8f5e6;
+}
+
+.hero {
+	background: linear-gradient(135deg, #fff6e8 0%, #ffe9d6 45%, #ffd8b7 100%);
+	border: 1px solid var(--line);
+	border-radius: 24px;
+	box-shadow: var(--shadow);
+	padding: 1rem 1.15rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+.hero__title {
+	margin: 0;
+	font-size: clamp(1.35rem, 2.8vw, 2rem);
+}
+
+.hero__subtitle {
+	margin: 0.2rem 0 0;
+	color: var(--ink-soft);
+	font-size: 0.95rem;
+}
+
+.hero__badge {
+	border: 1px solid rgba(47, 36, 30, 0.14);
+	background: rgba(255, 255, 255, 0.55);
+	padding: 0.5rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 700;
+}
+
+.hero__badge i {
+	color: var(--accent-2);
+	margin-right: 0.25rem;
+}
+
+@media (max-width: 768px) {
+	.app-shell {
+		padding-top: 0.8rem;
+	}
+
+	.hero {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}
