@@ -23,7 +23,7 @@ public class ReporteServiceImpl implements ReporteService {
         return detalleVentaRepository.findAll()
                 .stream()
                 .map(d -> new ReporteVentaDTO(
-                        d.getProducto().getNombre(),
+                    d.getProductoNombre(),
                         d.getCantidad(),
                         d.getPrecioUnitario(),
                         d.getCantidad() * d.getPrecioUnitario()

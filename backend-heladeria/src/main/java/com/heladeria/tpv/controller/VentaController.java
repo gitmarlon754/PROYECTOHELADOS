@@ -30,9 +30,17 @@ public class VentaController {
             return ResponseEntity.badRequest().build();
         }
 
-        Venta venta = ventaService.registrar(request.total());
+        List<VentaService.LineaVenta> lineas = request.items() == null
+                ? List.of()
+                : request.items().stream()
+                    .map(item -> new VentaService.LineaVenta(item.productoId(), item.cantidad(), item.precioUnitario()))
+                    .toList();
+
+        Venta venta = ventaService.registrar(request.total(), request.metodoPago(), lineas);
         return ResponseEntity.status(HttpStatus.CREATED).body(venta);
     }
 
-    public record VentaRequest(double total) {}
+    public record VentaRequest(double total, String metodoPago, List<VentaItemRequest> items) {}
+
+    public record VentaItemRequest(Long productoId, Integer cantidad, Double precioUnitario) {}
 }

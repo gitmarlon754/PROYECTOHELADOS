@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
-import { ProductoService, VentaRecienteItem } from '../../services/producto.service';
+import { ProductoService, VentaRecienteItem, VentaDetalleItem, StockInputRequest } from '../../services/producto.service';
 import { Producto } from '../../models/producto.model';
 
 interface ProductoCatalogoVM {
@@ -40,15 +41,41 @@ interface VentaRecienteVM {
     fecha: string;
     metodoPago: MetodoPago | 'unknown';
     cantidadItems: number;
+    items: Array<{ productoId: number; cantidad: number }>;
+}
+
+interface StockFormItem {
+    productoId: number;
+    nombre: string;
+    categoria: string;
+    precio: number;
+    cantidad: number;
+}
+
+interface NuevoProductoForm {
+    nombre: string;
+    categoria: string;
+    precio: number;
+    stockInicial: number;
+}
+
+interface RegistroJornada {
+    fechaCierre: string;
+    totalVentas: number;
+    cantidadVentas: number;
+    totalEfectivo: number;
+    totalNequi: number;
+    itemsVendidos: number;
 }
 
 type EstadoMensaje = 'success' | 'warning' | 'error' | 'info';
 type MetodoPago = 'cash' | 'card';
+type JornadaEventoTipo = 'apertura' | 'cierre';
 
 @Component({
     selector: 'app-productos',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule],
     templateUrl: './productos.component.html',
     styleUrl: './productos.component.css'
     })
@@ -71,12 +98,46 @@ type MetodoPago = 'cash' | 'card';
         toastMsg = '';
         toastTipo: EstadoMensaje = 'info';
         private toastTimer: ReturnType<typeof setTimeout> | null = null;
+        mostrarModalEventoJornada = false;
+        jornadaEventoTitulo = '';
+        jornadaEventoMensaje = '';
+        jornadaEventoTipo: JornadaEventoTipo = 'apertura';
+        jornadaEventoResumen: RegistroJornada | null = null;
+        private jornadaEventoTimer: ReturnType<typeof setTimeout> | null = null;
+        jornadaAbierta = true;
+        sobrantesDisponibles = false;
+        mostrarModalApertura = false;
+        mostrarModalReposicion = false;
+        mostrarModalSobrantes = false;
+        mostrarModalSinStock = false;
+        mostrarRegistros = false;
+        usarSobrantes = true;
+        jornadaInicioActual: Date | null = null;
+        stockAperturaForm: StockFormItem[] = [];
+        stockReposicionForm: StockFormItem[] = [];
+        registrosJornadas: RegistroJornada[] = [];
+        mostrarModalNuevoProducto = false;
+        nuevoProductoForm: NuevoProductoForm = {
+            nombre: '',
+            categoria: 'Helado - Cono',
+            precio: 0,
+            stockInicial: 0
+        };
+        categoriasProducto = [
+            'Helado - Cono',
+            'Helado - Tarrina',
+            'Helado - Copa',
+            'Extra',
+            'Topping'
+        ];
+        private readonly registrosKey = 'tpv_registros_jornadas';
 
     constructor(
         private productoService: ProductoService
     ) {}
 
     ngOnInit(): void {
+        this.cargarRegistrosJornadas();
         this.cargarCatalogo();
     }
 
@@ -84,6 +145,11 @@ type MetodoPago = 'cash' | 'card';
         if (this.toastTimer) {
             clearTimeout(this.toastTimer);
             this.toastTimer = null;
+        }
+
+        if (this.jornadaEventoTimer) {
+            clearTimeout(this.jornadaEventoTimer);
+            this.jornadaEventoTimer = null;
         }
     }
 
@@ -94,7 +160,18 @@ type MetodoPago = 'cash' | 'card';
 
         forkJoin({
             productos: this.productoService.getProductos(),
-            inventario: this.productoService.getInventario(),
+            inventario: this.productoService.getStockDiario().pipe(
+                catchError(() => this.productoService.getInventario())
+            ),
+            estadoJornada: this.productoService.getJornadaEstado().pipe(
+                catchError(() => of({
+                    jornadaAbierta: true,
+                    sobrantesDisponibles: false,
+                    fecha: new Date().toISOString(),
+                    productosAgotados: 0,
+                    inicioJornada: null
+                }))
+            ),
             ventasRecientes: this.productoService.getVentas().pipe(
                 catchError(() => {
                     this.modoVentasMock = true;
@@ -104,12 +181,23 @@ type MetodoPago = 'cash' | 'card';
         }).pipe(
             catchError(() => {
                 this.errorMsg = 'No se pudo sincronizar el panel. Verifica que backend esté activo en puerto 8080 y vuelve a intentar.';
-                return of({ productos: [], inventario: [], ventasRecientes: [] });
+                return of({
+                    productos: [],
+                    inventario: [],
+                    estadoJornada: {
+                        jornadaAbierta: true,
+                        sobrantesDisponibles: false,
+                        fecha: new Date().toISOString(),
+                        productosAgotados: 0,
+                        inicioJornada: null
+                    },
+                    ventasRecientes: []
+                });
             }),
             finalize(() => {
                 this.loading = false;
             })
-        ).subscribe(({ productos, inventario, ventasRecientes }) => {
+        ).subscribe(({ productos, inventario, estadoJornada, ventasRecientes }) => {
             const stockPorProducto = new Map<number, number>();
 
             inventario.forEach(item => {
@@ -117,7 +205,7 @@ type MetodoPago = 'cash' | 'card';
                 stockPorProducto.set(item.productoId, stockActual + item.stock);
             });
 
-            this.productos = productos
+            const productosBase = productos
                 .map((producto: Producto) => ({
                     id: producto.id,
                     nombre: producto.nombre,
@@ -128,7 +216,15 @@ type MetodoPago = 'cash' | 'card';
                 .filter(producto => !this.esCategoriaBebida(producto.categoria))
                 .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-            this.ventasRecientes = this.normalizarVentas(ventasRecientes);
+            this.jornadaAbierta = estadoJornada.jornadaAbierta;
+            this.sobrantesDisponibles = estadoJornada.sobrantesDisponibles;
+            this.usarSobrantes = estadoJornada.sobrantesDisponibles;
+            this.jornadaInicioActual = estadoJornada.inicioJornada ? new Date(estadoJornada.inicioJornada) : null;
+
+            const ventasNormalizadas = this.normalizarVentas(ventasRecientes);
+            this.ventasRecientes = this.filtrarVentasPorJornadaActual(ventasNormalizadas);
+            this.productos = this.aplicarVentasDelDiaAlStock(productosBase, this.ventasRecientes);
+            this.verificarModalSinStockTotal();
             this.actualizarSincronizacion();
         });
     }
@@ -141,6 +237,219 @@ type MetodoPago = 'cash' | 'card';
 
         this.limpiarMensaje();
         this.cargarCatalogo();
+    }
+
+    private prepararFormularioStock(): void {
+        this.stockAperturaForm = this.productos.map(producto => ({
+            productoId: producto.id,
+            nombre: producto.nombre,
+            categoria: producto.categoria,
+            precio: producto.precio,
+            cantidad: 0
+        }));
+    }
+
+    abrirModalAperturaJornada(): void {
+        if (this.jornadaAbierta) {
+            this.setVentaMsg('La jornada actual sigue abierta.', 'info');
+            return;
+        }
+
+        this.prepararFormularioStock();
+        this.usarSobrantes = this.sobrantesDisponibles;
+        this.mostrarModalApertura = true;
+    }
+
+    abrirModalSobrantes(): void {
+        this.mostrarModalSobrantes = true;
+    }
+
+    cerrarModalSobrantes(): void {
+        this.mostrarModalSobrantes = false;
+    }
+
+    cerrarModalSinStock(): void {
+        this.mostrarModalSinStock = false;
+    }
+
+    abrirModalReposicion(): void {
+        this.stockReposicionForm = this.productos.map(producto => ({
+            productoId: producto.id,
+            nombre: producto.nombre,
+            categoria: producto.categoria,
+            precio: producto.precio,
+            cantidad: 0
+        }));
+        this.mostrarModalReposicion = true;
+    }
+
+    cerrarModalReposicion(): void {
+        this.mostrarModalReposicion = false;
+    }
+
+    confirmarAperturaJornada(): void {
+        const stocks = this.stockAperturaForm
+            .filter(item => item.cantidad > 0)
+            .map(item => this.mapStockFormToRequest(item));
+
+        this.productoService.abrirJornada(this.usarSobrantes, stocks).subscribe({
+            next: () => {
+                this.mostrarModalApertura = false;
+                this.jornadaAbierta = true;
+                this.jornadaInicioActual = new Date();
+                this.setVentaMsg('Nueva jornada iniciada correctamente.', 'success');
+                this.mostrarEventoJornada(
+                    'Jornada Iniciada',
+                    'La nueva jornada se abrió correctamente. Ya puedes registrar ventas.',
+                    'apertura',
+                    null
+                );
+                this.cargarCatalogo();
+            },
+            error: () => {
+                this.setVentaMsg('No se pudo abrir la jornada. Intenta nuevamente.', 'error');
+            }
+        });
+    }
+
+    cerrarJornadaDelDia(): void {
+        if (!this.jornadaAbierta) {
+            this.setVentaMsg('No hay jornada abierta para cerrar.', 'info');
+            return;
+        }
+
+        const resumenCierre = this.guardarRegistroCierreJornada();
+
+        this.productoService.cerrarJornada(false).subscribe({
+            next: () => {
+                this.jornadaAbierta = false;
+                this.jornadaInicioActual = null;
+                this.ventasRecientes = [];
+                this.setVentaMsg('Ventas del día finalizadas. Cuando quieras, abre una nueva jornada.', 'success');
+                this.mostrarEventoJornada(
+                    'Jornada Cerrada',
+                    'Se finalizaron las ventas del día. Usa "Nueva jornada" cuando quieras continuar.',
+                    'cierre',
+                    resumenCierre
+                );
+                this.cargarCatalogo();
+            },
+            error: () => {
+                this.setVentaMsg('No se pudo cerrar la jornada.', 'error');
+            }
+        });
+    }
+
+    cerrarModalEventoJornada(): void {
+        if (this.jornadaEventoTimer) {
+            clearTimeout(this.jornadaEventoTimer);
+            this.jornadaEventoTimer = null;
+        }
+        this.jornadaEventoResumen = null;
+        this.mostrarModalEventoJornada = false;
+    }
+
+    private mostrarEventoJornada(titulo: string, mensaje: string, tipo: JornadaEventoTipo, resumen: RegistroJornada | null): void {
+        this.jornadaEventoTitulo = titulo;
+        this.jornadaEventoMensaje = mensaje;
+        this.jornadaEventoTipo = tipo;
+        this.jornadaEventoResumen = resumen;
+        this.mostrarModalEventoJornada = true;
+
+        if (this.jornadaEventoTimer) {
+            clearTimeout(this.jornadaEventoTimer);
+        }
+
+        this.jornadaEventoTimer = setTimeout(() => {
+            this.mostrarModalEventoJornada = false;
+            this.jornadaEventoResumen = null;
+            this.jornadaEventoTimer = null;
+        }, 3500);
+    }
+
+    aplicarReposicionStock(): void {
+        const stocks = this.stockReposicionForm
+            .filter(item => item.cantidad > 0)
+            .map(item => this.mapStockFormToRequest(item));
+
+        if (stocks.length === 0) {
+            this.setVentaMsg('Ingresa al menos una reposición de stock.', 'warning');
+            return;
+        }
+
+        this.productoService.reponerStock(stocks).subscribe({
+            next: () => {
+                this.mostrarModalReposicion = false;
+                this.setVentaMsg('Stock repuesto correctamente.', 'success');
+                this.cargarCatalogo();
+            },
+            error: () => {
+                this.setVentaMsg('No se pudo reponer stock.', 'error');
+            }
+        });
+    }
+
+    alternarRegistros(): void {
+        this.mostrarRegistros = !this.mostrarRegistros;
+    }
+
+    abrirModalNuevoProducto(): void {
+        this.nuevoProductoForm = {
+            nombre: '',
+            categoria: 'Helado - Cono',
+            precio: 0,
+            stockInicial: 0
+        };
+        this.mostrarModalNuevoProducto = true;
+    }
+
+    cerrarModalNuevoProducto(): void {
+        this.mostrarModalNuevoProducto = false;
+    }
+
+    crearNuevoProducto(): void {
+        if (!this.nuevoProductoForm.nombre.trim()) {
+            this.setVentaMsg('El nombre del producto es obligatorio.', 'warning');
+            return;
+        }
+
+        if (this.nuevoProductoForm.precio <= 0) {
+            this.setVentaMsg('El precio debe ser mayor a 0.', 'warning');
+            return;
+        }
+
+        if (this.nuevoProductoForm.stockInicial < 0 || this.nuevoProductoForm.stockInicial > 100) {
+            this.setVentaMsg('El stock inicial debe estar entre 0 y 100.', 'warning');
+            return;
+        }
+
+        // Por ahora simular la creación ya que el backend no tiene endpoint para crear productos
+        const nuevoId = Math.max(...this.productos.map(p => p.id), 0) + 1;
+        
+        const nuevoProducto: ProductoCatalogoVM = {
+            id: nuevoId,
+            nombre: this.nuevoProductoForm.nombre.trim(),
+            categoria: this.nuevoProductoForm.categoria,
+            precio: this.nuevoProductoForm.precio,
+            stock: this.nuevoProductoForm.stockInicial
+        };
+
+        this.productos.push(nuevoProducto);
+        this.productos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        this.verificarModalSinStockTotal();
+        
+        this.mostrarToast(`Producto "${nuevoProducto.nombre}" creado correctamente.`, 'success');
+        this.cerrarModalNuevoProducto();
+    }
+
+    private mapStockFormToRequest(item: StockFormItem): StockInputRequest {
+        return {
+            productoId: item.productoId,
+            nombre: item.nombre,
+            categoria: item.categoria,
+            precio: item.precio,
+            cantidad: Math.max(0, Math.min(100, Number(item.cantidad ?? 0)))
+        };
     }
 
     agregarAlCarrito(producto: ProductoCatalogoVM): void {
@@ -236,7 +545,17 @@ type MetodoPago = 'cash' | 'card';
         const totalCantidadActual = this.totalCantidad;
         const totalVentaActual = this.totalVenta;
 
-        this.productoService.registrarVenta({ total: totalVentaActual }).pipe(
+        const itemsRequest: VentaDetalleItem[] = carritoActual.map(item => ({
+            productoId: item.productoId,
+            cantidad: item.cantidad,
+            precioUnitario: item.precio
+        }));
+
+        this.productoService.registrarVenta({
+            total: totalVentaActual,
+            metodoPago,
+            items: itemsRequest
+        }).pipe(
             finalize(() => {
                 this.procesandoPago = false;
             })
@@ -269,13 +588,18 @@ type MetodoPago = 'cash' | 'card';
                         stock: Math.max(0, producto.stock - vendido)
                     };
                 });
+                this.verificarModalSinStockTotal();
 
                 this.agregarVentaReciente({
                     id: venta.id ?? Date.now(),
                     total: venta.total ?? totalVentaActual,
                     fecha: venta.fecha ?? new Date().toISOString(),
                     metodoPago,
-                    cantidadItems: totalCantidadActual
+                    cantidadItems: totalCantidadActual,
+                    items: itemsRequest.map(item => ({
+                        productoId: item.productoId,
+                        cantidad: item.cantidad
+                    }))
                 });
                 this.modoVentasMock = false;
                 this.actualizarSincronizacion();
@@ -302,16 +626,112 @@ type MetodoPago = 'cash' | 'card';
                     ? metodoPago
                     : 'unknown';
 
+                const detallesRaw = (venta as VentaRecienteItem).detalles;
+                const itemsDirectos = (venta as Partial<VentaRecienteVM>).items;
+                const itemsNormalizados = Array.isArray(itemsDirectos)
+                    ? itemsDirectos
+                    : Array.isArray(detallesRaw)
+                        ? detallesRaw
+                            .filter(detalle => ((detalle?.productoId ?? detalle?.producto?.id ?? 0) > 0) && (detalle?.cantidad ?? 0) > 0)
+                            .map(detalle => ({
+                                productoId: Number(detalle.productoId ?? detalle.producto?.id),
+                                cantidad: Number(detalle.cantidad)
+                            }))
+                        : [];
+
+                const cantidadItemsNormalizada = (venta as Partial<VentaRecienteVM>).cantidadItems
+                    ?? itemsNormalizados.reduce((acc, item) => acc + item.cantidad, 0);
+
                 return {
                 id: venta.id,
                 total: Number(venta.total ?? 0),
                 fecha: venta.fecha ?? new Date().toISOString(),
                 metodoPago: metodoNormalizado,
-                cantidadItems: (venta as Partial<VentaRecienteVM>).cantidadItems ?? 0
+                cantidadItems: cantidadItemsNormalizada,
+                items: itemsNormalizados
             };
             })
             .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
             .slice(0, 10);
+    }
+
+    private aplicarVentasDelDiaAlStock(productos: ProductoCatalogoVM[], ventas: VentaRecienteVM[]): ProductoCatalogoVM[] {
+        const hoy = new Date();
+        const vendidosPorProducto = new Map<number, number>();
+
+        ventas
+            .filter(venta => this.esMismaFecha(venta.fecha, hoy))
+            .forEach(venta => {
+                venta.items.forEach(item => {
+                    const vendidoActual = vendidosPorProducto.get(item.productoId) ?? 0;
+                    vendidosPorProducto.set(item.productoId, vendidoActual + item.cantidad);
+                });
+            });
+
+        return productos.map(producto => {
+            const vendido = vendidosPorProducto.get(producto.id) ?? 0;
+            return {
+                ...producto,
+                stock: Math.max(0, producto.stock - vendido)
+            };
+        });
+    }
+
+    private filtrarVentasPorJornadaActual(ventas: VentaRecienteVM[]): VentaRecienteVM[] {
+        if (!this.jornadaAbierta || !this.jornadaInicioActual) {
+            return [];
+        }
+
+        const inicio = this.jornadaInicioActual.getTime();
+        return ventas.filter(venta => new Date(venta.fecha).getTime() >= inicio);
+    }
+
+    private verificarModalSinStockTotal(): void {
+        this.mostrarModalSinStock = !this.loading
+            && !this.errorMsg
+            && this.productos.length > 0
+            && this.totalStock <= 0;
+    }
+
+    private guardarRegistroCierreJornada(): RegistroJornada {
+        const registro: RegistroJornada = {
+            fechaCierre: new Date().toISOString(),
+            totalVentas: this.totalVentasRecientes,
+            cantidadVentas: this.cantidadVentasRecientes,
+            totalEfectivo: this.totalVentasEfectivo,
+            totalNequi: this.totalVentasTarjeta,
+            itemsVendidos: this.articulosVendidosHoy
+        };
+
+        this.registrosJornadas = [registro, ...this.registrosJornadas].slice(0, 30);
+        this.guardarRegistrosJornadas();
+        return registro;
+    }
+
+    private cargarRegistrosJornadas(): void {
+        try {
+            const raw = localStorage.getItem(this.registrosKey);
+            if (!raw) {
+                this.registrosJornadas = [];
+                return;
+            }
+
+            const parsed = JSON.parse(raw) as RegistroJornada[];
+            this.registrosJornadas = Array.isArray(parsed) ? parsed : [];
+        } catch {
+            this.registrosJornadas = [];
+        }
+    }
+
+    private guardarRegistrosJornadas(): void {
+        localStorage.setItem(this.registrosKey, JSON.stringify(this.registrosJornadas));
+    }
+
+    private esMismaFecha(fechaIso: string, fechaBase: Date): boolean {
+        const fechaVenta = new Date(fechaIso);
+        return fechaVenta.getFullYear() === fechaBase.getFullYear()
+            && fechaVenta.getMonth() === fechaBase.getMonth()
+            && fechaVenta.getDate() === fechaBase.getDate();
     }
 
     private agregarVentaReciente(venta: VentaRecienteVM): void {
@@ -495,6 +915,20 @@ type MetodoPago = 'cash' | 'card';
     get chartDayProgressPct(): number {
         const metaDia = 120;
         return Math.min(100, (this.totalVentasRecientes / metaDia) * 100);
+    }
+
+    get hayAgotados(): boolean {
+        return this.productos.some(producto => producto.stock <= 0);
+    }
+
+    get totalAgotados(): number {
+        return this.productos.filter(producto => producto.stock <= 0).length;
+    }
+
+    get productosSobrantes(): ProductoCatalogoVM[] {
+        return this.productos
+            .filter(producto => producto.stock > 0)
+            .sort((a, b) => a.nombre.localeCompare(b.nombre));
     }
 
     get horaActual(): string {

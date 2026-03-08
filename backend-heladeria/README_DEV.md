@@ -20,8 +20,11 @@ Ejecutar en modo `dev` (usa el perfil `dev` que activa H2 en memoria):
 # script creado en dev: C:\Windows\Temp\run_backend_dev.bat
 C:\Windows\Temp\run_backend_dev.bat
 # o directamente
-java -jar target/backend-heladeria-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
+$env:SPRING_PROFILES_ACTIVE='dev'
+.\mvnw.cmd -DskipTests spring-boot:run
 ```
+
+Nota: `java -jar target/backend-heladeria-0.0.1-SNAPSHOT.jar` puede fallar si el jar no fue reempaquetado por Spring Boot o está bloqueado por otro proceso.
 
 Endpoints útiles (mocks para frontend):
 

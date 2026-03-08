@@ -26,7 +26,7 @@ function Test-Http {
     param([string]$Url)
 
     try {
-        $resp = Invoke-WebRequest -Uri $Url -Method Get -UseBasicParsing -TimeoutSec 4
+        $resp = Invoke-WebRequest -Uri $Url -Method Get -UseBasicParsing -TimeoutSec 2
         return [PSCustomObject]@{
             Url = $Url
             Ok = $true
@@ -46,26 +46,55 @@ function Test-Http {
     }
 }
 
+function Test-HttpWithRetry {
+    param(
+        [string]$Url,
+        [int]$Attempts = 1,
+        [int]$DelaySeconds = 0
+    )
+
+    $last = $null
+    for ($i = 1; $i -le $Attempts; $i++) {
+        $last = Test-Http -Url $Url
+        if ($last.Ok) {
+            return $last
+        }
+
+        if ($i -lt $Attempts) {
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+
+    return $last
+}
+
 Write-Host '=== Estado entorno dev Heladeria ===' -ForegroundColor Cyan
 
 $backendPort = Test-Port -Port 8080
 $frontendPort = Test-Port -Port 4200
 
+$backendCheck = Test-HttpWithRetry -Url $backendUrl -Attempts 1 -DelaySeconds 0
+$frontendCheck = Test-HttpWithRetry -Url $frontendUrl -Attempts 1 -DelaySeconds 0
+$h2Check = Test-HttpWithRetry -Url $h2Url -Attempts 1 -DelaySeconds 0
+
+$backendEffectiveUp = $backendCheck.Ok -or $h2Check.Ok
+$frontendEffectiveUp = $frontendCheck.Ok
+
 if ($backendPort) {
     Write-Host "Backend puerto 8080: UP (PID $($backendPort.Pid), $($backendPort.Process))" -ForegroundColor Green
+} elseif ($backendEffectiveUp) {
+    Write-Host 'Backend puerto 8080: UP (detectado por HTTP)' -ForegroundColor Green
 } else {
     Write-Host 'Backend puerto 8080: DOWN' -ForegroundColor Red
 }
 
 if ($frontendPort) {
     Write-Host "Frontend puerto 4200: UP (PID $($frontendPort.Pid), $($frontendPort.Process))" -ForegroundColor Green
+} elseif ($frontendEffectiveUp) {
+    Write-Host 'Frontend puerto 4200: UP (detectado por HTTP)' -ForegroundColor Green
 } else {
     Write-Host 'Frontend puerto 4200: DOWN' -ForegroundColor Red
 }
-
-$backendCheck = Test-Http -Url $backendUrl
-$frontendCheck = Test-Http -Url $frontendUrl
-$h2Check = Test-Http -Url $h2Url
 
 if ($backendCheck.Ok) {
     Write-Host "API mock backend: OK ($($backendCheck.Status))" -ForegroundColor Green
@@ -83,6 +112,16 @@ if ($h2Check.Ok) {
     Write-Host "H2 console: OK ($($h2Check.Status))" -ForegroundColor Green
 } else {
     Write-Host 'H2 console: FAIL' -ForegroundColor Yellow
+}
+
+$devProfileDetected = $h2Check.Ok
+if ($devProfileDetected) {
+    Write-Host 'Perfil dev backend: OK (H2 activo)' -ForegroundColor Green
+} elseif ($backendEffectiveUp) {
+    Write-Host 'Perfil dev backend: NO CONFIRMADO (backend arriba, H2 no disponible)' -ForegroundColor Yellow
+    Write-Host 'Sugerencia: reinicia backend con .\start-dev.ps1 o con SPRING_PROFILES_ACTIVE=dev.' -ForegroundColor DarkYellow
+} else {
+    Write-Host 'Perfil dev backend: NO DISPONIBLE (backend caido)' -ForegroundColor Red
 }
 
 Write-Host '------------------------------------' -ForegroundColor DarkGray

@@ -372,6 +372,12 @@
   border-color: #e2d4ff;
 }
 
+.product-card--agotado {
+  border-color: #dc3545 !important;
+  border-width: 3px !important;
+  opacity: 0.75;
+}
+
 .cart-panel {
   background: var(--surface);
   border-color: var(--line) !important;
@@ -629,6 +635,149 @@
   background: #ffefec;
 }
 
+.estado--warning {
+  justify-content: space-between;
+  border-color: #f3d6a3;
+  background: #fff7e6;
+}
+
+.apertura-modal {
+  max-width: 780px;
+}
+
+.jornada-evento-modal {
+  max-width: 520px;
+  border: 1px solid #b8e7d4;
+  background: linear-gradient(160deg, #f4fff9 0%, #eef9ff 100%);
+  box-shadow: 0 20px 40px rgba(32, 61, 43, 0.2);
+  animation: jornada-event-enter 220ms ease-out;
+}
+
+.jornada-evento-modal h4 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #1f7358;
+}
+
+.jornada-evento-modal h4 i {
+  font-size: 1.15rem;
+}
+
+.jornada-evento-modal p {
+  color: #395a49;
+  font-weight: 600;
+}
+
+.jornada-evento-modal--cierre {
+  border-color: #f4d7a3;
+  background: linear-gradient(160deg, #fff9f0 0%, #fff2e5 100%);
+  animation: jornada-event-enter-cierre 260ms ease-out;
+}
+
+.jornada-evento-modal--cierre h4 {
+  color: #9a5b00;
+}
+
+.jornada-evento-modal--cierre p {
+  color: #7f5311;
+}
+
+.jornada-evento-resumen {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin: 0.2rem 0 0.8rem;
+}
+
+.jornada-evento-resumen article {
+  border: 1px solid #e6d8c2;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  padding: 0.45rem 0.55rem;
+}
+
+.jornada-evento-resumen small {
+  display: block;
+  color: #7f6b55;
+  font-size: 0.74rem;
+}
+
+.jornada-evento-resumen strong {
+  font-size: 0.95rem;
+  color: #5c4030;
+}
+
+.jornada-evento-resumen__total {
+  grid-column: 1 / -1;
+  border-color: #f0c27e !important;
+  background: #fff4e1 !important;
+}
+
+@keyframes jornada-event-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes jornada-event-enter-cierre {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.005);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jornada-evento-modal,
+  .jornada-evento-modal--cierre {
+    animation: none;
+  }
+}
+
+.apertura-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.apertura-item {
+  border: 1px solid #ecd9c6;
+  border-radius: 10px;
+  background: #fffbf6;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.apertura-item small {
+  color: var(--ink-soft);
+}
+
+.apertura-item input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+}
+
 .spin {
   animation: spin 1s linear infinite;
 }
@@ -699,6 +848,45 @@
   }
 }
 
+.form-producto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.form-producto__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-producto__field label {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.form-producto__field small {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.form-producto__field .form-control,
+.form-producto__field .form-select {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.9rem;
+  background: var(--surface);
+}
+
+.form-producto__field .form-control:focus,
+.form-producto__field .form-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(228, 127, 126, 0.1);
+}
+
 @media (max-width: 1150px) {
   .productos-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -753,6 +941,10 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0.3rem;
+  }
+
+  .apertura-grid {
+    grid-template-columns: 1fr;
   }
 
   .toast-venta {

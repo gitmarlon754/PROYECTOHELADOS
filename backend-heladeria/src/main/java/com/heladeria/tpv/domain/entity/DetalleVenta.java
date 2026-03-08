@@ -1,5 +1,6 @@
 package com.heladeria.tpv.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,11 +13,11 @@ public class DetalleVenta {
 
     @ManyToOne
     @JoinColumn(name = "VENTA_ID")
+    @JsonIgnore
     private Venta venta;
 
-    @ManyToOne
-    @JoinColumn(name = "PRODUCTO_ID")
-    private Producto producto;
+    private Long productoId;
+    private String productoNombre;
 
     private int cantidad;
     private double precioUnitario;
@@ -25,12 +26,14 @@ public class DetalleVenta {
 
     public Long getId() { return id; }
     public Venta getVenta() { return venta; }
-    public Producto getProducto() { return producto; }
+    public Long getProductoId() { return productoId; }
+    public String getProductoNombre() { return productoNombre; }
     public int getCantidad() { return cantidad; }
     public double getPrecioUnitario() { return precioUnitario; }
 
     public void setVenta(Venta venta) { this.venta = venta; }
-    public void setProducto(Producto producto) { this.producto = producto; }
+    public void setProductoId(Long productoId) { this.productoId = productoId; }
+    public void setProductoNombre(String productoNombre) { this.productoNombre = productoNombre; }
     public void setCantidad(int cantidad) { this.cantidad = cantidad; }
     public void setPrecioUnitario(double precioUnitario) {
         this.precioUnitario = precioUnitario;
