@@ -6,7 +6,7 @@
       </div>
       <h2 class="h4 fw-bold mb-1">Venta Completada</h2>
       <p class="mb-0 small opacity-75">
-        Pago con {{ sale.paymentMethod === 'card' ? 'tarjeta' : 'efectivo' }}
+        Pago con {{ venta.metodoPago === 'card' ? 'tarjeta' : 'efectivo' }}
       </p>
     </header>
 
@@ -18,21 +18,26 @@
         </div>
         <p class="small text-muted mb-0">Heladeria Artesanal</p>
         <p class="small text-muted mb-0 mt-2">
-          {{ formatDate(sale.timestamp) }} {{ formatTime(sale.timestamp) }}
+          {{ formatDate(venta.timestamp) }} {{ formatTime(venta.timestamp) }}
         </p>
-        <p class="small text-muted mb-0">Ticket #{{ sale.id.slice(-6) }}</p>
+        <p class="small text-muted mb-0 mt-2">
+          {{ formatDate(ventaTimestamp) }} {{ formatTime(ventaTimestamp) }}
+        </p>
+      
       </div>
 
       <div class="d-flex flex-column gap-2">
         <div
-          *ngFor="let item of sale.items; trackBy: trackByItem"
+          *ngFor="let item of venta.items; trackBy: trackByItem"
           class="d-flex justify-content-between small"
         >
           <div class="d-flex align-items-center gap-2">
-            <span>{{ item.product.icon }}</span>
-            <span>{{ item.quantity }}x {{ item.product.name }}</span>
+            <span>{{ item.variante.producto.nombre }}</span>
+            <span>{{ item.quantity }}x {{ item.variante.producto.nombre }}</span>
           </div>
-          <span class="fw-semibold">{{ (item.product.price * item.quantity).toFixed(2) }}EUR</span>
+          <span class="fw-semibold">
+            {{ (item.variante.producto.precio * item.quantity).toFixed(2) }}EUR
+          </span>
         </div>
       </div>
 
@@ -47,7 +52,7 @@
         </div>
         <div class="d-flex justify-content-between fw-bold fs-5 pt-1">
           <span>Total</span>
-          <span class="text-primary">{{ sale.total.toFixed(2) }}EUR</span>
+          <span class="text-primary">{{ venta.total.toFixed(2) }}EUR</span>
         </div>
       </div>
 

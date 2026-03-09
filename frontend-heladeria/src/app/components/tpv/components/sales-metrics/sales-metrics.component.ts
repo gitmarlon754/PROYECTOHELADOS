@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Sale } from '../models/tpv.types';
+import { Venta, CartItem, PaymentMethod } from '../models/tpv.types';
 
 interface MetricItem {
   label: string;
@@ -14,48 +14,54 @@ interface MetricItem {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './sales-metrics.component.html',
-  styleUrl: './sales-metrics.component.scss'
+  styleUrls: ['./sales-metrics.component.scss']
 })
 export class SalesMetricsComponent {
-  @Input() sales: Sale[] = [];
+  @Input() sales: Venta[] = [];
   @Output() close = new EventEmitter<void>();
 
+  // Total de ingresos
   get totalRevenue(): number {
-    return this.sales.reduce((sum, sale) => sum + sale.total, 0);
+    return this.sales.reduce((sum: number, venta: Venta) => sum + venta.total, 0);
   }
 
-  get cardSales(): Sale[] {
-    return this.sales.filter((sale) => sale.paymentMethod === 'card');
+  // Ventas por tipo de pago
+  get cardSales(): Venta[] {
+    return this.sales.filter((venta) => venta.metodoPago === 'card');
   }
 
-  get cashSales(): Sale[] {
-    return this.sales.filter((sale) => sale.paymentMethod === 'cash');
+  get cashSales(): Venta[] {
+    return this.sales.filter((venta) => venta.metodoPago === 'cash');
   }
 
   get cardRevenue(): number {
-    return this.cardSales.reduce((sum, sale) => sum + sale.total, 0);
+    return this.cardSales.reduce((sum: number, venta: Venta) => sum + venta.total, 0);
   }
 
   get cashRevenue(): number {
-    return this.cashSales.reduce((sum, sale) => sum + sale.total, 0);
+    return this.cashSales.reduce((sum: number, venta: Venta) => sum + venta.total, 0);
   }
 
+  // Total de items vendidos
   get totalItems(): number {
     return this.sales.reduce(
-      (sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+      (sum: number, venta: Venta) =>
+        sum + venta.items.reduce((itemSum: number, item: CartItem) => itemSum + item.quantity, 0),
       0
     );
   }
 
+  // Ticket promedio
   get avgTicket(): number {
     return this.sales.length > 0 ? this.totalRevenue / this.sales.length : 0;
   }
 
+  // Métricas para mostrar
   get metrics(): MetricItem[] {
     return [
       {
         label: 'Ventas Totales',
-        value: `${this.totalRevenue.toFixed(2)}EUR`,
+        value: `${this.totalRevenue.toFixed(2)} EUR`,
         iconClass: 'bi bi-graph-up-arrow',
         colorClass: 'metric-primary'
       },
@@ -67,12 +73,12 @@ export class SalesMetricsComponent {
       },
       {
         label: 'Ticket Medio',
-        value: `${this.avgTicket.toFixed(2)}EUR`,
+        value: `${this.avgTicket.toFixed(2)} EUR`,
         iconClass: 'bi bi-bag-check',
         colorClass: 'metric-secondary'
       },
       {
-        label: 'Articulos Vendidos',
+        label: 'Artículos Vendidos',
         value: `${this.totalItems}`,
         iconClass: 'bi bi-cart-check',
         colorClass: 'metric-caramel'
@@ -80,22 +86,23 @@ export class SalesMetricsComponent {
     ];
   }
 
-  get recentSales(): Sale[] {
+  // Últimas 5 ventas
+  get recentSales(): Venta[] {
     return this.sales.slice(-5).reverse();
   }
 
-  formatTime(date: Date): string {
-    return new Date(date).toLocaleTimeString('es-ES', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
+  // Formato de hora
+  formatSaleTime(sale: Venta): string {
+  const date = sale.timestamp ? new Date(sale.timestamp) : new Date();
+  return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}
 
+  // TrackBy para Angular
   trackByMetric(_: number, metric: MetricItem): string {
     return metric.label;
   }
 
-  trackBySale(_: number, sale: Sale): string {
-    return sale.id;
+  trackBySale(_: number, venta: Venta): number | undefined {
+    return venta.id;
   }
 }

@@ -3,42 +3,43 @@
     [showMetrics]="showMetrics"
     [salesCount]="sales.length"
     (toggleMetrics)="toggleMetrics()"
-  />
+  ></app-tpv-header>
 
   <app-sales-metrics
     *ngIf="showMetrics"
     [sales]="sales"
     (close)="showMetrics = false"
-  />
+  ></app-sales-metrics>
 
   <main class="flex-grow-1 container-fluid px-3 px-lg-4 py-3 py-lg-4 tpv-main">
     <div class="row g-4 justify-content-center tpv-main-row">
       <div class="col-12 col-lg-8 col-xl-9">
-        <app-product-catalog (addToCart)="addToCart($event)" />
+        <app-product-catalog (addToCart)="addToCart($event)"></app-product-catalog>
       </div>
 
       <aside class="col-12 col-lg-4 col-xl-3 d-flex">
         <app-cart-panel
           class="w-100"
           [items]="cart"
-          (updateQuantity)="updateQuantity($event.productId, $event.quantity)"
+          (updateQuantity)="updateQuantity($event.varianteId, $event.quantity)"
           (clearCart)="clearCart()"
           (processPayment)="processPayment($event)"
-        />
+        ></app-cart-panel>
       </aside>
     </div>
   </main>
 
+  <!-- ✅ Cambiado 'sale' por 'venta' -->
   <app-ticket-modal
     *ngIf="showTicket && lastSale"
-    [sale]="lastSale"
+    [venta]="lastSale"
     (close)="closeTicket()"
-  />
+  ></app-ticket-modal>
 
   <app-tpv-toast
     *ngIf="toast"
     [message]="toast.message"
     [type]="toast.type"
     (close)="closeToast()"
-  />
+  ></app-tpv-toast>
 </div>

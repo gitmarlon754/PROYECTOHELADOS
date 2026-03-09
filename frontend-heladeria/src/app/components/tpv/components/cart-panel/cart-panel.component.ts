@@ -7,17 +7,20 @@ import { CartItem, PaymentMethod } from '../models/tpv.types';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './cart-panel.component.html',
-  styleUrl: './cart-panel.component.scss'
+  styleUrls: ['./cart-panel.component.scss']
 })
 export class CartPanelComponent {
   @Input() items: CartItem[] = [];
 
-  @Output() updateQuantity = new EventEmitter<{ productId: string; quantity: number }>();
+  @Output() updateQuantity = new EventEmitter<{ varianteId: number; quantity: number }>();
   @Output() clearCart = new EventEmitter<void>();
   @Output() processPayment = new EventEmitter<PaymentMethod>();
 
   get subtotal(): number {
-    return this.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    return this.items.reduce(
+      (sum, item) => sum + item.variante.producto.precio * item.quantity,
+      0
+    );
   }
 
   get tax(): number {
@@ -32,7 +35,7 @@ export class CartPanelComponent {
     return this.items.reduce((sum, item) => sum + item.quantity, 0);
   }
 
-  trackByProductId(_: number, item: CartItem): string {
-    return item.product.id;
+  trackByProductId(_: number, item: CartItem): number {
+    return item.variante.id;
   }
 }
