@@ -3,14 +3,19 @@ package com.heladeria.tpv.domain.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "STOCK_DIARIO")
+@Table(
+    name = "stock_diario",
+    indexes = {
+        @Index(name = "idx_stock_producto", columnList = "producto_id")
+    }
+)
 public class StockDiario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Column(name = "producto_id", unique = true)
     private Long productoId;
 
     private String nombre;

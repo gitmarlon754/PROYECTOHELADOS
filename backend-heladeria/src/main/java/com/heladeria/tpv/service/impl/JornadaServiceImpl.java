@@ -19,19 +19,40 @@ public class JornadaServiceImpl implements JornadaService {
     private final StockDiarioRepository stockDiarioRepository;
 
     public JornadaServiceImpl(JornadaRepository jornadaRepository,
-                              StockDiarioRepository stockDiarioRepository) {
+        StockDiarioRepository stockDiarioRepository) {
         this.jornadaRepository = jornadaRepository;
         this.stockDiarioRepository = stockDiarioRepository;
     }
 
     @Override
     public EstadoJornadaDTO estado() {
+
         Optional<Jornada> abierta = jornadaRepository.findFirstByEstadoOrderByInicioDesc("ABIERTA");
-        boolean tieneSobrantes = stockDiarioRepository.findAll().stream().anyMatch(s -> (s.getStock() != null ? s.getStock() : 0) > 0);
-        int agotados = (int) stockDiarioRepository.findAll().stream().filter(s -> (s.getStock() != null ? s.getStock() : 0) <= 0).count();
-        String fecha = abierta.map(j -> j.getFecha().toString()).orElse(LocalDate.now().toString());
-        String inicio = abierta.map(j -> j.getInicio() == null ? null : j.getInicio().toString()).orElse(null);
-        return new EstadoJornadaDTO(abierta.isPresent(), tieneSobrantes, fecha, agotados, inicio);
+
+        List<StockDiario> stocks = stockDiarioRepository.findAll();
+
+        boolean tieneSobrantes = stocks.stream()
+                .anyMatch(s -> (s.getStock() != null ? s.getStock() : 0) > 0);
+
+        int agotados = (int) stocks.stream()
+                .filter(s -> (s.getStock() != null ? s.getStock() : 0) <= 0)
+                .count();
+
+        String fecha = abierta
+                .map(j -> j.getFecha().toString())
+                .orElse(LocalDate.now().toString());
+
+        String inicio = abierta
+                .map(j -> j.getInicio() == null ? null : j.getInicio().toString())
+                .orElse(null);
+
+        return new EstadoJornadaDTO(
+                abierta.isPresent(),
+                tieneSobrantes,
+                fecha,
+                agotados,
+                inicio
+        );
     }
 
     @Override

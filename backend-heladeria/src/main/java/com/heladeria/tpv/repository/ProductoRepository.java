@@ -3,5 +3,12 @@ package com.heladeria.tpv.repository;
 import com.heladeria.tpv.domain.entity.Producto;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
+
+    List<Producto> findByActivoTrue();
+
+    List<Producto> findByCategoriaId(Long categoriaId);
+
 }

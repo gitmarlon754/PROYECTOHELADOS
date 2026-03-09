@@ -6,7 +6,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "JORNADA")
+@Table(
+    name = "JORNADA",
+    indexes = {
+        @Index(name = "idx_jornada_estado", columnList = "estado"),
+        @Index(name = "idx_jornada_inicio", columnList = "inicio")
+    }
+)
 public class Jornada {
 
     @Id

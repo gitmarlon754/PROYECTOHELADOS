@@ -11,7 +11,10 @@ public class Producto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nombre;
+
+    @Column(nullable = false)
     private BigDecimal precio;
 
     @ManyToOne
@@ -22,7 +25,9 @@ public class Producto {
     @JoinColumn(name = "TIPO_HELADO_ID")
     private TipoHelado tipoHelado;
 
-    private Integer activo;
+    @Column(nullable = false)
+    private Boolean activo = true;
+
     private String imagen;
 
     public Producto() {}
@@ -32,7 +37,7 @@ public class Producto {
     public BigDecimal getPrecio() { return precio; }
     public Categoria getCategoria() { return categoria; }
     public TipoHelado getTipoHelado() { return tipoHelado; }
-    public Integer getActivo() { return activo; }
+    public Boolean getActivo() { return activo; }
     public String getImagen() { return imagen; }
 
     public void setId(Long id) { this.id = id; }
@@ -40,6 +45,6 @@ public class Producto {
     public void setPrecio(BigDecimal precio) { this.precio = precio; }
     public void setCategoria(Categoria categoria) { this.categoria = categoria; }
     public void setTipoHelado(TipoHelado tipoHelado) { this.tipoHelado = tipoHelado; }
-    public void setActivo(Integer activo) { this.activo = activo; }
+    public void setActivo(Boolean activo) { this.activo = activo; }
     public void setImagen(String imagen) { this.imagen = imagen; }
 }

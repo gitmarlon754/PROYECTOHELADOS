@@ -19,6 +19,18 @@ public class ProductoController {
 
     @GetMapping
     public List<Producto> listar() {
-        return productoService.listar();
+        return productoService.listarActivos();
     }
+    @GetMapping("/categoria/{id}")
+    public List<Producto> listarPorCategoria(@PathVariable Long id) {
+        return productoService.listarPorCategoria(id);
+    }
+
+    @PostMapping
+    public Producto crear(@RequestBody Producto producto) {
+        return productoService.guardar(producto);
+    }
+
+
+    
 }

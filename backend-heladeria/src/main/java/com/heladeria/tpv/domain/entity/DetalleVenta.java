@@ -22,6 +22,8 @@ public class DetalleVenta {
     private int cantidad;
     private double precioUnitario;
 
+    private double subtotal;
+
     public DetalleVenta() {}
 
     public Long getId() { return id; }
@@ -30,12 +32,18 @@ public class DetalleVenta {
     public String getProductoNombre() { return productoNombre; }
     public int getCantidad() { return cantidad; }
     public double getPrecioUnitario() { return precioUnitario; }
+    public double getSubtotal() { return subtotal; }
 
+
+    
     public void setVenta(Venta venta) { this.venta = venta; }
     public void setProductoId(Long productoId) { this.productoId = productoId; }
     public void setProductoNombre(String productoNombre) { this.productoNombre = productoNombre; }
     public void setCantidad(int cantidad) { this.cantidad = cantidad; }
     public void setPrecioUnitario(double precioUnitario) {
         this.precioUnitario = precioUnitario;
+    }
+    public void setSubtotal(double subtotal) {
+        this.subtotal = subtotal;
     }
 }

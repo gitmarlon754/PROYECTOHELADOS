@@ -17,7 +17,20 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public List<Producto> listar() {
-        return productoRepository.findAll();
+    public List<Producto> listarActivos() {
+        return productoRepository.findByActivoTrue();
     }
+
+    @Override
+    public List<Producto> listarPorCategoria(Long categoriaId) {
+        return productoRepository.findByCategoriaId(categoriaId);
+    }
+
+    @Override
+    public Producto guardar(Producto producto) {
+        return productoRepository.save(producto);
+    }
+
+
+    
 }

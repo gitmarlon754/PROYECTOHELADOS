@@ -3,7 +3,12 @@ package com.heladeria.tpv.domain.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "INVENTARIO")
+@Table(
+    name = "INVENTARIO",
+    indexes = {
+        @Index(name = "idx_inv_variante_sede", columnList = "VARIANTE_PRODUCTO_ID, SEDE_ID")
+    }
+)
 public class Inventario {
 
     @Id
