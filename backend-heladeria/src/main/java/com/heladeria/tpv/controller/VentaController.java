@@ -21,4 +21,9 @@ public class VentaController {
     public List<Venta> listar() {
         return ventaService.listar();
     }
+
+    @PostMapping
+    public Venta crear(@RequestBody Venta venta) {
+        return ventaService.guardar(venta);
+    }
 }

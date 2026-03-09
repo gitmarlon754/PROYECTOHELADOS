@@ -1,6 +1,8 @@
 package com.heladeria.tpv.service.impl;
 
 import com.heladeria.tpv.domain.entity.Inventario;
+import com.heladeria.tpv.domain.entity.Sede;
+import com.heladeria.tpv.domain.entity.VarianteProducto;
 import com.heladeria.tpv.repository.InventarioRepository;
 import com.heladeria.tpv.service.InventarioService;
 import org.springframework.stereotype.Service;
@@ -22,14 +24,29 @@ public class InventarioServiceImpl implements InventarioService {
     }
 
     @Override
-    public Inventario actualizarStock(Long productoId, Long sedeId, Integer cantidad) {
+    public Inventario actualizarStock(Long varianteId, Long sedeId, Integer cantidad) {
 
         Inventario inv = repository
-                .findByProducto_IdAndSede_Id(productoId, sedeId)
+                .findByVarianteProducto_IdAndSede_Id(varianteId, sedeId)
                 .orElseThrow(() -> new RuntimeException("Inventario no encontrado"));
 
         inv.setCantidad(cantidad);
         return repository.save(inv);
     }
-}
 
+    @Override
+    public void descontarStock(VarianteProducto variante, Sede sede, int cantidad) {
+
+        Inventario inventario = repository
+                .findByVarianteProductoAndSede(variante, sede)
+                .orElseThrow(() -> new RuntimeException("No hay stock registrado para esta variante en esta sede"));
+
+        if (inventario.getCantidad() < cantidad) {
+            throw new RuntimeException("Stock insuficiente");
+        }
+
+        inventario.setCantidad(inventario.getCantidad() - cantidad);
+
+        repository.save(inventario);
+    }
+}

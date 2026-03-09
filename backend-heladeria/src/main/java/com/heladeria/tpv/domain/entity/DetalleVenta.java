@@ -15,8 +15,8 @@ public class DetalleVenta {
     private Venta venta;
 
     @ManyToOne
-    @JoinColumn(name = "PRODUCTO_ID")
-    private Producto producto;
+    @JoinColumn(name = "VARIANTE_PRODUCTO_ID")
+    private VarianteProducto varianteProducto;
 
     private int cantidad;
     private double precioUnitario;
@@ -25,12 +25,16 @@ public class DetalleVenta {
 
     public Long getId() { return id; }
     public Venta getVenta() { return venta; }
-    public Producto getProducto() { return producto; }
+    public VarianteProducto getVarianteProducto() {
+        return varianteProducto;
+    }
     public int getCantidad() { return cantidad; }
     public double getPrecioUnitario() { return precioUnitario; }
 
     public void setVenta(Venta venta) { this.venta = venta; }
-    public void setProducto(Producto producto) { this.producto = producto; }
+    public void setVarianteProducto(VarianteProducto varianteProducto) {
+        this.varianteProducto = varianteProducto;
+    }
     public void setCantidad(int cantidad) { this.cantidad = cantidad; }
     public void setPrecioUnitario(double precioUnitario) {
         this.precioUnitario = precioUnitario;

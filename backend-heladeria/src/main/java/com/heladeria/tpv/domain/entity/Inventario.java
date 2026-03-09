@@ -11,8 +11,8 @@ public class Inventario {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "PRODUCTO_ID")
-    private Producto producto;
+    @JoinColumn(name = "VARIANTE_PRODUCTO_ID")
+    private VarianteProducto varianteProducto;
 
     @ManyToOne
     @JoinColumn(name = "SEDE_ID")
@@ -23,13 +23,12 @@ public class Inventario {
     public Inventario() {}
 
     public Long getId() { return id; }
-    public Producto getProducto() { return producto; }
+    public VarianteProducto getVarianteProducto() { return varianteProducto; }
     public Sede getSede() { return sede; }
     public Integer getCantidad() { return cantidad; }
 
     public void setId(Long id) { this.id = id; }
-    public void setProducto(Producto producto) { this.producto = producto; }
+    public void setVarianteProducto(VarianteProducto varianteProducto) { this.varianteProducto = varianteProducto; }
     public void setSede(Sede sede) { this.sede = sede; }
     public void setCantidad(Integer cantidad) { this.cantidad = cantidad; }
 }
-

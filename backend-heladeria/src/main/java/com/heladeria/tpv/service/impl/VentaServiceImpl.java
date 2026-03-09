@@ -1,11 +1,11 @@
 package com.heladeria.tpv.service.impl;
 
+import org.springframework.stereotype.Service;
+import java.util.List;
+
 import com.heladeria.tpv.domain.entity.Venta;
 import com.heladeria.tpv.repository.VentaRepository;
 import com.heladeria.tpv.service.VentaService;
-
-import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class VentaServiceImpl implements VentaService {
@@ -19,5 +19,10 @@ public class VentaServiceImpl implements VentaService {
     @Override
     public List<Venta> listar() {
         return ventaRepository.findAll();
+    }
+
+    @Override
+    public Venta guardar(Venta venta) {
+        return ventaRepository.save(venta);
     }
 }
