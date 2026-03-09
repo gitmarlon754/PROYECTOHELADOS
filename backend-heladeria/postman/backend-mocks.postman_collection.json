@@ -1,0 +1,72 @@
+{
+  "info": {
+    "name": "Backend Heladeria - Mock Endpoints",
+    "_postman_id": "backend-heladeria-mocks",
+    "description": "Collection with mock endpoints for frontend development",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "GET /api/mock/productos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/mock/productos",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "mock",
+            "productos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET /api/mock/inventario",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/mock/inventario",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "mock",
+            "inventario"
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET /api/mock/ventas/recent",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/mock/ventas/recent",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "mock",
+            "ventas",
+            "recent"
+          ]
+        }
+      }
+    }
+  ]
+}

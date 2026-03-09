@@ -1,0 +1,11 @@
+<div class="toast-wrap animate-bounce-in">
+  <div class="toast-body rounded-3 shadow-lg px-3 py-2 d-flex align-items-center gap-2" [ngClass]="type">
+    <span class="toast-icon d-inline-flex align-items-center justify-content-center rounded-circle">
+      <i [class]="iconClass"></i>
+    </span>
+    <span class="small fw-semibold">{{ message }}</span>
+    <button type="button" class="btn btn-sm p-0 ms-1 toast-close" (click)="close.emit()">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
+</div>

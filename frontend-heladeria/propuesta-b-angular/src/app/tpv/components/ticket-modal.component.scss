@@ -1,0 +1,45 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.ticket-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(35, 20, 15, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.ticket-modal {
+  width: min(100%, 24rem);
+  background: var(--card);
+  border-radius: 1rem;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.ticket-success {
+  background: var(--success);
+  color: var(--success-foreground);
+}
+
+.success-circle {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.border-dashed {
+  border-style: dashed !important;
+  border-color: var(--border) !important;
+}
+
+.ticket-actions {
+  background: color-mix(in oklab, var(--muted) 35%, white 65%);
+}

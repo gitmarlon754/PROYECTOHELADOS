@@ -1,0 +1,48 @@
+<section class="d-flex flex-column gap-3">
+  <div class="position-relative">
+    <i class="bi bi-search search-icon"></i>
+    <input
+      type="text"
+      class="form-control search-input"
+      placeholder="Buscar producto..."
+      [(ngModel)]="searchQuery"
+    />
+  </div>
+
+  <div class="d-flex gap-2 overflow-auto pb-2 no-scrollbar">
+    <button
+      *ngFor="let category of categories"
+      type="button"
+      class="btn btn-sm rounded-3 d-inline-flex align-items-center gap-2 flex-shrink-0 category-btn"
+      [ngClass]="activeCategory === category.id ? 'btn-primary shadow-sm' : 'btn-outline-secondary'"
+      (click)="activeCategory = category.id"
+    >
+      <i [class]="category.iconClass"></i>
+      <span>{{ category.label }}</span>
+    </button>
+  </div>
+
+  <div class="row g-3 g-lg-4">
+    <div
+      *ngFor="let product of filteredProducts; index as i; trackBy: trackByProductId"
+      class="col-6 col-sm-4 col-lg-3 col-xl-3 col-xxl-2"
+    >
+      <button
+        type="button"
+        class="w-100 border-2 rounded-4 shadow-sm product-card animate-fade-in"
+        [ngClass]="product.colorClass"
+        [style.animationDelay]="(i * 30) + 'ms'"
+        (click)="addToCart.emit(product)"
+      >
+        <span class="product-icon">{{ product.icon }}</span>
+        <span class="product-name">{{ product.name }}</span>
+        <span class="product-price">{{ product.price.toFixed(2) }}EUR</span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="filteredProducts.length === 0" class="text-center py-5 text-muted">
+    <i class="bi bi-cone-striped fs-1 opacity-50"></i>
+    <p class="mb-0 mt-2">No se encontraron productos</p>
+  </div>
+</section>

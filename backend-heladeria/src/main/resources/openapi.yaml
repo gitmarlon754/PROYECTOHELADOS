@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Backend Heladeria - Mock Endpoints
+  version: 0.0.1
+  description: Minimal OpenAPI spec exposing the mock endpoints for frontend development.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/mock/productos:
+    get:
+      summary: Listado de productos (mock)
+      responses:
+        '200':
+          description: Lista de productos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        nombre:
+                          type: string
+                        categoria:
+                          type: string
+                        precio:
+                          type: number
+                          format: double
+  /api/mock/inventario:
+    get:
+      summary: Estado de inventario (mock)
+      responses:
+        '200':
+          description: Inventario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        productoId:
+                          type: integer
+                        sede:
+                          type: string
+                        stock:
+                          type: integer
+  /api/mock/ventas/recent:
+    get:
+      summary: Ventas recientes (mock)
+      responses:
+        '200':
+          description: Ventas recientes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        fecha:
+                          type: string
+                          format: date-time
+                        total:
+                          type: number
+                          format: double

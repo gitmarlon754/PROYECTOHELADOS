@@ -1,0 +1,64 @@
+:host {
+  display: block;
+  min-height: 100%;
+}
+
+.cart-panel {
+  border-radius: 1rem;
+  background: var(--card);
+  border-color: var(--border) !important;
+}
+
+.bg-soft {
+  background: color-mix(in oklab, var(--muted) 65%, white 35%);
+}
+
+.icon-box {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: color-mix(in oklab, var(--primary) 14%, white 86%);
+  color: var(--primary);
+}
+
+.cart-items-zone {
+  min-height: 200px;
+  max-height: 40vh;
+}
+
+@media (min-width: 992px) {
+  .cart-items-zone {
+    max-height: 50vh;
+  }
+}
+
+.cart-item {
+  border-color: var(--border) !important;
+  background: color-mix(in oklab, var(--muted) 45%, transparent 55%);
+}
+
+.quantity-btn {
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: none;
+}
+
+.quantity-value {
+  width: 2rem;
+}
+
+.bg-muted {
+  background: color-mix(in oklab, var(--muted) 70%, white 30%);
+}
+
+.bg-primary-soft {
+  background: color-mix(in oklab, var(--primary) 18%, white 82%);
+}
+
+.line-total {
+  min-width: 4rem;
+}

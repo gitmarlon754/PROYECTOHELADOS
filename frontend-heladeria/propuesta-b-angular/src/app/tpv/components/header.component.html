@@ -1,0 +1,37 @@
+<header class="tpv-header sticky-top border-bottom shadow-sm">
+  <div class="container-fluid px-3 px-lg-4 py-2 py-lg-3">
+    <div class="d-flex align-items-center justify-content-between gap-3 tpv-header-inner">
+      <div class="d-flex align-items-center gap-3">
+        <div class="brand-logo d-flex align-items-center justify-content-center">
+          <i class="bi bi-cone-striped fs-5"></i>
+        </div>
+        <div class="d-none d-sm-block">
+          <h1 class="h5 mb-0 fw-bold heading-font">Dolce Gelato</h1>
+          <p class="small text-muted mb-0">Sistema TPV</p>
+        </div>
+      </div>
+
+      <div class="d-none d-md-flex align-items-center gap-3 small text-muted">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-clock"></i>
+          <span class="fw-semibold text-foreground">{{ currentTime }}</span>
+        </div>
+        <div class="vr"></div>
+        <span>
+          <span class="fw-semibold text-foreground">{{ salesCount }}</span>
+          ventas hoy
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-sm rounded-3 d-inline-flex align-items-center gap-2"
+        [ngClass]="showMetrics ? 'btn-primary' : 'btn-outline-secondary'"
+        (click)="toggleMetrics.emit()"
+      >
+        <i class="bi bi-bar-chart-line"></i>
+        <span class="d-none d-sm-inline">Metricas</span>
+      </button>
+    </div>
+  </div>
+</header>

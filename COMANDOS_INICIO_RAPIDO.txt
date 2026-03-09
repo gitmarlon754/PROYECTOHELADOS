@@ -1,0 +1,52 @@
+INICIO RAPIDO - PROYECTO HELADERIA (Windows PowerShell)
+
+Ubicacion:
+- Abrir terminal en: C:\Users\WinterOS\Desktop\noc\Yelados\PROYECTOHELADOS
+
+Si tu PowerShell bloquea scripts (solo en la sesion actual):
+- Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+====================================================
+1) FLUJO RECOMENDADO (1 comando)
+====================================================
+Menu interactivo:
+- .\dev.ps1
+
+Acciones directas:
+- .\dev.ps1 -Action start            # Arranque normal (build backend + npm install si falta)
+- .\dev.ps1 -Action start-fast       # Arranque rapido (sin build/install)
+- .\dev.ps1 -Action start-open       # Arranque normal + abre navegador en http://localhost:4200
+- .\dev.ps1 -Action start-fast-open  # Arranque rapido + abre navegador en http://localhost:4200
+- .\dev.ps1 -Action status           # Estado de puertos y endpoints
+- .\dev.ps1 -Action stop             # Stop seguro (solo procesos del proyecto)
+- .\dev.ps1 -Action stop-force       # Stop forzado
+
+====================================================
+2) SCRIPTS INDIVIDUALES
+====================================================
+- .\start-dev.ps1
+- .\start-dev.ps1 -SkipBackendBuild -SkipFrontendInstall
+- .\status-dev.ps1
+- .\stop-dev.ps1
+- .\stop-dev.ps1 -ForceAll
+
+====================================================
+3) ENDPOINTS CLAVE
+====================================================
+Frontend:
+- http://localhost:4200
+
+Backend mock API:
+- http://localhost:8080/api/mock/productos
+- http://localhost:8080/api/mock/inventario
+- http://localhost:8080/api/mock/ventas/recent
+
+H2 console (perfil dev):
+- http://localhost:8080/h2-console
+
+====================================================
+4) NOTAS RAPIDAS
+====================================================
+- El backend dev usa H2 en memoria (application-dev.properties).
+- Si ya compilaste/instalaste dependencias, usa start-fast para ahorrar tiempo.
+- Si algo se queda colgado, ejecuta stop y luego start-fast-open.

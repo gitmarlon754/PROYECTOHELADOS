@@ -1,0 +1,64 @@
+:host {
+  display: block;
+}
+
+.metrics-wrap {
+  background: var(--card);
+  border-color: var(--border) !important;
+}
+
+.metrics-inner {
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.metric-card,
+.pay-card {
+  border-color: var(--border) !important;
+  background: color-mix(in oklab, var(--muted) 35%, white 65%);
+}
+
+.metric-icon,
+.pay-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.metric-primary {
+  background: color-mix(in oklab, var(--primary) 20%, white 80%);
+  color: var(--primary);
+}
+
+.metric-accent {
+  background: color-mix(in oklab, var(--accent) 25%, white 75%);
+  color: var(--accent-foreground);
+}
+
+.metric-secondary {
+  background: color-mix(in oklab, var(--secondary) 20%, white 80%);
+  color: var(--secondary);
+}
+
+.metric-caramel {
+  background: rgba(220, 166, 96, 0.2);
+  color: var(--foreground);
+}
+
+.card-pay {
+  background: rgba(142, 194, 255, 0.25);
+  color: #2b65c4;
+}
+
+.cash-pay {
+  background: rgba(145, 217, 161, 0.25);
+  color: #2f8f4d;
+}
+
+.recent-list {
+  max-height: 8rem;
+  overflow: auto;
+}
+
+.recent-item {
+  background: color-mix(in oklab, var(--muted) 30%, transparent 70%);
+}
